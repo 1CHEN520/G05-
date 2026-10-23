@@ -1,0 +1,34 @@
+# ============================================================
+# 数据库配置（SQLite + WAL 模式）
+# 可恢复铁律：WAL + 事务原子写入，kill -9 后重启数据无缺口
+# ============================================================
+
+database:
+  # 数据库文件路径（相对项目根目录）
+  path: "data/db/g05.db"
+
+  # ---- SQLite 关键 PRAGMA（在连接建立时注入）----
+  pragma:
+    journal_mode: "WAL"          # 写前日志：崩溃可恢复 + 读写并发
+    synchronous: "NORMAL"        # WAL 下 NORMAL 已足够安全，性能优于 FULL
+    busy_timeout: 5000           # 锁等待 5s，避免 database is locked
+    foreign_keys: "ON"           # 外键约束必须显式开启（SQLite 默认关闭！）
+    cache_size: -64000           # 64MB 页缓存
+    temp_store: "MEMORY"
+
+  # ---- 连接池 ----
+  pool:
+    size: 10                     # 连接数
+    max_overflow: 20             # 溢出上限
+    pool_timeout: 30             # 获取连接超时（秒）
+    pool_recycle: 1800           # 连接回收周期（秒）
+
+  # ---- 慢查询阈值（毫秒），超阈值打 WARN 日志 ----
+  slow_query_ms: 200
+
+  # ---- 归档 ----
+  archive:
+    enabled: true
+    dir: "data/archive"
+    # 保留天数，超过则归档到冷备文件
+    retention_days: 90
