@@ -31,6 +31,11 @@ logs/*
 .env
 *.local.yaml
 
+# ---- 本地临时产物（截图、临时测试文件）----
+.tmp_shots/
+.tmp_test/
+pp03.yml
+
 # ---- 编辑器 ----
 .idea/
 .vscode/

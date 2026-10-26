@@ -41,3 +41,16 @@ def apply_triggers(conn) -> None:  # noqa: ANN001
 
     for ddl in TRIGGERS:
         conn.execute(text(ddl))
+
+
+def ensure_schema(drop: bool = False) -> None:
+    """建表 + 建触发器。``drop=True`` 时先清空全部表（本地重置用）。"""
+    from g05.core.db import get_engine
+    from g05.models import Base
+
+    engine = get_engine()
+    if drop:
+        Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+    with engine.begin() as conn:
+        apply_triggers(conn)

@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import importlib
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -17,17 +18,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from g05.api.routes import audit as audit_routes
-from g05.api.routes import devices as device_routes
-from g05.api.routes import imports as import_routes
-from g05.api.routes import lineage as lineage_routes
-from g05.api.routes import points as point_routes
 from g05.core.config import PROJECT_ROOT, settings
 from g05.core.db import get_engine, healthcheck
 from g05.core.logging import get_logger, log_event
 from g05.models import Base
 
 log = get_logger("main")
+
+# 路由模块按角色分工落地，允许"还没合进来"：
+# 骨架阶段某个模块缺失时只告警、不崩，这样组长推完骨架就能起服务，
+# 各成员的分支陆续合并后路由自然补齐。
+ROUTE_MODULES = ["devices", "points", "lineage", "audit", "imports"]
 
 
 @asynccontextmanager
@@ -110,8 +111,13 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 # ---------------- 路由注册 ----------------
 API_PREFIX = "/api"
-for module in (device_routes, point_routes, lineage_routes, audit_routes, import_routes):
-    app.include_router(module.router, prefix=API_PREFIX)
+for _name in ROUTE_MODULES:
+    try:
+        _module = importlib.import_module(f"g05.api.routes.{_name}")
+    except ModuleNotFoundError as _exc:
+        log.warning("route.module.missing", extra={"extra_fields": {"module": _name, "err": str(_exc)}})
+        continue
+    app.include_router(_module.router, prefix=API_PREFIX)
 
 
 @app.get("/healthz", tags=["运维"], summary="健康检查（含真实 DB 探测）")

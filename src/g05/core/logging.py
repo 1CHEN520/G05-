@@ -62,7 +62,7 @@ def setup_logging(config_path: Path | None = None) -> None:
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-            stream=sys.stdout,
+            stream=sys.stderr,
         )
 
     _CONFIGURED = True

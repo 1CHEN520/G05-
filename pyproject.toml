@@ -23,6 +23,10 @@ dev = [
     "ruff>=0.5",
 ]
 
+# 命令行入口：装好后可直接用 g05 preflight / g05 serve
+[project.scripts]
+g05 = "g05.cli:main"
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
@@ -45,6 +49,19 @@ filterwarnings = [
 line-length = 110
 target-version = "py310"
 src = ["src", "tests"]
+
+# ---------------- black（兼容配置，避免门禁默认 88 列误伤） ----------------
+[tool.black]
+line-length = 110
+target-version = ["py310"]
+
+# ---------------- coverage ----------------
+[tool.coverage.run]
+source = ["src/g05"]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if __name__ == .__main__.:"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]

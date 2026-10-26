@@ -4,7 +4,7 @@
 >
 > **一句话**：把散在 Excel 里的 12 类设备台账收进一个带血缘追踪、变更可审计的资产目录系统。
 
-[![tests](https://img.shields.io/badge/pytest-46%20passed-brightgreen)]() [![python](https://img.shields.io/badge/python-3.10%2B-blue)]() [![db](https://img.shields.io/badge/SQLite-WAL-orange)]()
+[![tests](https://img.shields.io/badge/pytest-46%20passed-brightgreen)]() [![python](https://img.shields.io/badge/python-3.12-blue)]() [![db](https://img.shields.io/badge/SQLite-WAL-orange)]()
 
 ---
 
@@ -45,13 +45,15 @@
 **跑得起来，一条命令。**
 
 ```bash
-pip install -r requirements.txt
-python scripts/init_db.py && python scripts/seed_data.py
-python -m g05.main
+conda env create -f environment.yml     # 第 1 层：Python 3.12.15
+conda activate pp03
+powershell -ExecutionPolicy Bypass -File .\setup_pp03.ps1   # 第 2/3/4 层 + 自检
+python -m g05 serve
 ```
 
 - 配置全部外置在 `config/*.yaml`，改配置不改代码
-- 依赖版本锁定在 `requirements.txt`
+- 依赖版本锁定在 `requirements*.txt`，四层结构与七个坑见 [`docs/04-环境搭建步骤.md`](docs/04-环境搭建步骤.md)
+- `python -m g05 preflight` 一条命令自检环境（输出 JSON，`passed` 必须为 true）
 - 无需独立数据库服务（SQLite 单文件）
 - 无外网依赖（前端零 CDN，图表用原生 SVG）
 
@@ -63,26 +65,31 @@ python -m g05.main
 
 ## 二、快速开始
 
-### 环境
+### 环境（pp03 四层）
 
 ```bash
-# 课程环境
+conda env create -f environment.yml      # 第 1 层：conda 只装 Python 3.12.15 + pip
 conda activate pp03
-
-# 或自建
-python -m venv .venv && .venv\Scripts\activate     # Windows
-pip install -r requirements.txt
+python -m pip install -r requirements.txt        # 第 2 层：运行依赖（已锁版本）
+python -m pip install -r requirements-dev.txt    # 第 3 层：开发工具
+python -m pip install --no-deps --no-build-isolation -e .   # 第 4 层：项目本体
 ```
+
+或直接跑一键脚本：`powershell -ExecutionPolicy Bypass -File .\setup_pp03.ps1`
+（五步：前置检查 → 装依赖 → editable 安装 → `pip check` → `preflight` + `pytest`）
+
+详细说明与七个必踩的坑见 [`docs/04-环境搭建步骤.md`](docs/04-环境搭建步骤.md)。
 
 ### 三步跑通
 
 ```bash
-python scripts/init_db.py          # 1. 建表 + 装防篡改触发器（幂等）
-python scripts/seed_data.py        # 2. 灌入 60 台设备 / 180 个测点 / 血缘图
-python -m g05.main                 # 3. 启动，浏览器开 http://127.0.0.1:8000
+python -m g05 preflight     # 1. 环境自检（输出 JSON，passed 必须 true）
+python -m g05 initdb        # 2. 建表 + 装防篡改触发器（幂等）
+python -m g05 seed          # 3. 灌入 60 台设备 / 180 个测点 / 血缘图
+python -m g05 serve         # 4. 启动，浏览器开 http://127.0.0.1:8000
 ```
 
-Windows 用户可直接双击 `run.bat`。
+Windows 用户可直接双击 `run.bat`（内含依赖检查与自检）。
 
 ### 入口
 
@@ -121,12 +128,17 @@ Windows 用户可直接双击 `run.bat`。
 
 ```
 G05/
+├── environment.yml             # 第 1 层：conda（只装 Python + pip）
+├── requirements.txt            # 第 2 层：运行依赖（版本锁定）
+├── requirements-dev.txt        # 第 3 层：开发工具
+├── setup_pp03.ps1              # 一键装环境 + 自检
 ├── config/                     # 配置外置（改配置不改代码）
 │   ├── app.yaml                # 应用参数：端口/导入上限/血缘深度
 │   ├── database.yaml           # SQLite PRAGMA、连接池、归档策略
 │   ├── rules.yaml              # ★ 导入校验规则 + 质量评分权重
-│   └── logging.yaml            # 结构化 JSON 日志
+│   └── logging.yaml            # 结构化 JSON 日志（输出到 stderr）
 ├── src/g05/
+│   ├── cli.py                  # ★ 命令行入口：preflight / initdb / seed / serve
 │   ├── core/                   # 配置中心 / 日志 / 引擎 / 触发器 DDL
 │   ├── models/                 # 7 张表：device, measure_point, record, alarm,
 │   │                           #        audit_log, lineage_node, lineage_edge
@@ -140,15 +152,32 @@ G05/
 │   ├── services/
 │   │   └── point_service.py    # 改名（带影响面）/ 软删 / 版本链
 │   ├── api/routes/             # devices, points, lineage, audit, imports
-│   ├── schemas/dto.py          # Pydantic 出入参
+│   ├── schemas/dto.py          # Pydantic 出入参（接口契约，归 A-00）
 │   └── main.py                 # FastAPI 入口
 ├── tests/                      # 46 个单测
 ├── scripts/
 │   ├── init_db.py              # 建表 + 触发器 + 自检
 │   ├── seed_data.py            # 演示数据 + 样例 Excel
-│   └── fault_inject.py         # ★ 五类故障注入（答辩演示）
-├── web/index.html              # 零依赖单页控制台
-├── docs/                       # 需求/架构/ADR/运行手册/演示脚本
+│   ├── fault_inject.py         # ★ 五类故障注入（答辩演示）
+│   ├── make_role_bundles.py    # ★ 按角色拆分文件包 -> dist/roles/
+│   ├── make_roster_xlsx.py     # ★ 生成《团队角色清单》Excel
+│   ├── apply_roster.py         # ★ 回收 Excel -> roster.yaml -> CODEOWNERS
+│   ├── gen_collab_docs.py      # ★ 生成分工清单 / issues.md / CODEOWNERS
+│   └── create_issues.py        # ★ 批量建 GitHub Issue（幂等）
+├── web/                        # 零依赖单页控制台（已按角色拆分）
+│   ├── index.html              #   结构（C-04）
+│   ├── css/app.css             #   样式（C-04）
+│   └── js/{api,pages,main}.js  #   页面逻辑（C-04）
+│       └── lineage.js          #   血缘图渲染（B-02）
+├── collab/                     # ★ 协作：角色表 / 任务表 / 推送指南
+│   ├── roles.yaml              #   角色与文件归属（唯一事实来源）
+│   ├── issues.yaml             #   39 个任务（唯一事实来源）
+│   ├── roster.yaml             #   人员信息（Excel 回收后生成）
+│   ├── 分工文件清单.md          #   自动生成，勿手改
+│   ├── issues.md               #   自动生成，勿手改
+│   └── 推送指南.md              #   骨架 + 分角色分支的推送流程
+├── .github/                    # CODEOWNERS / PR 模板 / ISSUE 模板 / CI
+├── docs/                       # 需求/架构/ADR/环境/运行手册/演示脚本
 ├── data/
 │   ├── db/                     # SQLite 文件（.gitignore）
 │   └── sample/                 # 样例导入工作簿
@@ -237,21 +266,41 @@ pytest --cov=src/g05         # 覆盖率
 
 ---
 
-## 八、贡献表
+## 八、团队分工与协作
 
-| 编号 | 角色 | 模块 | commits |
+九个角色、39 个任务，全部落在 `collab/` 下，**改分工改 YAML，文档自动重生成**。
+
+| 编号 | 角色 | 负责模块 | 分支 |
 |---|---|---|---|
-| A-01 | 组长/架构 | 架构设计、接口冻结、集成验收 | — |
-| B-01 | ORM/建模 | `models/`、索引、外键策略 | — |
-| B-02 | 血缘引擎 | `lineage/`、影响面算法 | — |
-| C-01 | 导入模块 | `importers/bulk_importer.py` | — |
-| C-02 | 校验报告 | `importers/validator.py`、质量周报 | — |
-| C-03 | 审计中间件 | `audit/`、触发器 | — |
-| C-04 | CRUD/查询 | `api/routes/`、`services/` | — |
-| C-05 | 测试压测 | `tests/`、`scripts/fault_inject.py` | — |
-| C-06 | 文档运维 | `README`、`docs/`、`web/` | — |
+| `A-00` | 组长 / 架构师 | 骨架、接口契约、集成验收 | `feat/a00-bootstrap` |
+| `B-01` | 内核 · 数据建模与 ORM | `models/`、索引、外键策略、建库脚本 | `feat/b01-orm-core` |
+| `B-02` | 内核 · 血缘引擎 | `lineage/`、影响面、`web/js/lineage.js` | `feat/b02-lineage` |
+| `C-01` | 批量导入器 | `importers/bulk_importer.py`、导入接口 | `feat/c01-importer` |
+| `C-02` | 校验规则引擎 | `importers/validator.py`、`rules.yaml`、报告导出 | `feat/c02-validator` |
+| `C-03` | 审计与变更追踪 | `audit/`、`models/audit_log.py`、触发器 | `feat/c03-audit` |
+| `C-04` | CRUD 与控制台 | `api/routes/{devices,points}.py`、`web/` | `feat/c04-api-web` |
+| `C-05` | 测试与性能压测 | `tests/`、`fault_inject.py`、CI | `feat/c05-qa` |
+| `C-06` | 文档与运维 | `docs/`、运行手册、演示脚本 | `feat/c06-docs-ops` |
 
-> `git shortlog -sn` 现场可查。
+协作流程（**不整包推远端**，每人只推自己那份文件）：
+
+| 文档 | 用途 |
+|---|---|
+| [`collab/团队角色清单.xlsx`](docs/团队角色清单.xlsx) | 发组员填写：姓名 / 学号 / GitHub / 技能自评 / 每周工时 |
+| [`collab/分工文件清单.md`](collab/分工文件清单.md) | 谁负责哪些文件（自动生成） |
+| [`collab/issues.md`](collab/issues.md) | 39 个任务的验收口径（自动生成） |
+| [`collab/推送指南.md`](collab/推送指南.md) | 组长推骨架 → 每人推自己分支 → PR 评审 |
+
+四条命令串起整套协作：
+
+```bash
+python scripts/make_roster_xlsx.py                        # 生成角色清单 Excel
+python scripts/apply_roster.py --xlsx docs/团队角色清单.xlsx  # 回收后更新 CODEOWNERS
+python scripts/make_role_bundles.py                       # 拆成 9 个可独立推送的文件包
+python scripts/create_issues.py --dry-run                 # 预览 39 个 issue（加 --apply 真建）
+```
+
+> `git shortlog -sn` 现场可查贡献度；CODEOWNERS 保证每个 PR 自动指派到模块负责人。
 
 ---
 
@@ -263,6 +312,7 @@ pytest --cov=src/g05         # 覆盖率
 | [`docs/01-需求规格.md`](docs/01-需求规格.md) | 用户故事 + 非功能需求（带数字） |
 | [`docs/02-架构设计.md`](docs/02-架构设计.md) | 组件图、ER 图、接口契约、部署图 |
 | [`docs/03-流程与标准映射.md`](docs/03-流程与标准映射.md) | 七阶段 SLA ↔ GB/T 8566 ↔ TOGAF ADM |
+| [`docs/04-环境搭建步骤.md`](docs/04-环境搭建步骤.md) | pp03 四层环境、精确版本、七个必踩的坑 |
 | [`docs/runbook.md`](docs/runbook.md) | 运行手册：部署、配置、监控、故障处理 |
 | [`docs/demo_script.md`](docs/demo_script.md) | 答辩演示脚本（10 分钟逐句） |
 | [`docs/踩坑记录.md`](docs/踩坑记录.md) | 实施过程中的 8 个坑与解法 |

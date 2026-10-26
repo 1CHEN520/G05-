@@ -1,0 +1,9 @@
+# G05 设备台账与测点资产目录 —— 第 1 层：Conda 基础
+# 原则：这一层只用 conda 装 Python 解释器与 pip，其余全部交给 pip。
+#       不要在这里写 numpy/sqlalchemy 之类，否则会和 pip 层版本打架。
+name: pp03
+channels:
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
