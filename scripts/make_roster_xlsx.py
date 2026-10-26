@@ -234,7 +234,7 @@ def build() -> Workbook:
             c.border = BORDER
             c.font = Font(size=10)
             c.alignment = Alignment(horizontal="center" if c_i <= 6 else "left", vertical="center")
-    for col, w in zip("ABCDEFG", [11, 7, 30, 20, 9, 8, 32]):
+    for col, w in zip("ABCDEFG", [11, 7, 30, 20, 9, 8, 32], strict=False):
         ws3.column_dimensions[col].width = w
 
     return wb

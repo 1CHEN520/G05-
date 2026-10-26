@@ -6,13 +6,13 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
 from g05.api.deps import get_db, get_operator
 from g05.core.logging import get_logger
-from g05.importers.bulk_importer import build_rejection_note, import_workbook
+from g05.importers.bulk_importer import import_workbook
 from g05.schemas.dto import ImportSummary
 
 router = APIRouter(prefix="/import", tags=["导入"])
@@ -55,10 +55,11 @@ async def validate_only(
     db: Session = Depends(get_db),
 ):
     """预检模式：跑完整校验流程，但用 savepoint 回滚，不产生任何写入。"""
+    from sqlalchemy import select
+
     from g05.importers.bulk_importer import read_sheet
     from g05.importers.validator import RuleEngine
     from g05.models.device import Device
-    from sqlalchemy import select
 
     suffix = Path(file.filename or "").suffix.lower()
     if suffix not in {".xlsx", ".xlsm"}:

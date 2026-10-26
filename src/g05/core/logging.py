@@ -18,7 +18,7 @@ from typing import Any
 
 import yaml
 
-from g05.core.config import PROJECT_ROOT, settings
+from g05.core.config import PROJECT_ROOT
 
 _CONFIGURED = False
 

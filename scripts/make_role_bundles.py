@@ -103,6 +103,16 @@ BUNDLE_README = """# {code} · {title}
 
 ## 怎么用这个包
 
+包结构（`files/` 才是要拷进仓库的内容，`_bundle/` 是给你的说明）：
+
+```
+C-01/
+├── _bundle/
+│   ├── README.md        ← 你正在看的这份
+│   └── COMMIT_MSG.txt   ← 提交信息，直接引用
+└── files/               ← 按原相对路径排好，整目录覆盖即可
+```
+
 ```bash
 # 1. 克隆组长建好的仓库
 git clone <仓库地址> g05-asset-catalog
@@ -111,12 +121,12 @@ cd g05-asset-catalog
 # 2. 建你自己的分支（只建一次）
 git checkout -b {branch}
 
-# 3. 把本包内容覆盖进仓库根目录（保持相对路径）
-cp -r <本目录>/* .
+# 3. 把 files/ 里的内容覆盖进仓库根目录（保持相对路径）
+cp -r <本目录>/files/* .
 
 # 4. 提交（提交信息已写好，直接引用）
 git add -A
-git commit -F COMMIT_MSG.txt
+git commit -F <本目录>/_bundle/COMMIT_MSG.txt
 git push -u origin {branch}
 
 # 5. 到 GitHub 上开 Pull Request，目标分支 main，请求 A-00 评审
@@ -142,9 +152,13 @@ def write_bundle(role: dict, files: list[str]) -> None:
     target = DIST / role["code"]
     if target.exists():
         shutil.rmtree(target)
+    payload = target / "files"
+    meta = target / "_bundle"
+    meta.mkdir(parents=True, exist_ok=True)
+
     for rel in files:
         src = ROOT / rel
-        dst = target / rel
+        dst = payload / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
 
@@ -153,13 +167,11 @@ def write_bundle(role: dict, files: list[str]) -> None:
     if len(files) > 12:
         bullets += f"\n- 其余 {len(files) - 12} 个文件见本包目录"
 
-    (target / "README.md").write_text(
-        BUNDLE_README.format(
-            count=len(files), filelist=filelist, **role
-        ),
+    (meta / "README.md").write_text(
+        BUNDLE_README.format(count=len(files), filelist=filelist, **role),
         encoding="utf-8",
     )
-    (target / "COMMIT_MSG.txt").write_text(
+    (meta / "COMMIT_MSG.txt").write_text(
         COMMIT_MSG.format(
             code_lower=role["code"].lower().replace("-", ""),
             bullets=bullets,

@@ -36,8 +36,8 @@ class Alarm(Base, TimestampMixin):
     # 恢复时间，NULL 表示仍在告警中
     recovered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    device: Mapped["Device"] = relationship(back_populates="alarms", lazy="select")
-    point: Mapped["MeasurePoint"] = relationship(back_populates="alarms", lazy="select")
+    device: Mapped[Device] = relationship(back_populates="alarms", lazy="select")
+    point: Mapped[MeasurePoint] = relationship(back_populates="alarms", lazy="select")
 
     __table_args__ = (
         Index("ix_alarm_active", "alarm_level", "recovered_at"),

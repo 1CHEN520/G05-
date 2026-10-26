@@ -36,10 +36,23 @@ TRIGGERS: list[str] = [
 
 
 def apply_triggers(conn) -> None:  # noqa: ANN001
-    """在给定连接/事务上创建全部触发器（幂等）。"""
+    """在给定连接/事务上创建全部触发器（幂等）。
+
+    只对**已存在的表**装触发器：骨架阶段某些模块还没合进来（表不存在）时跳过，
+    而不是让整个应用起不来。
+    """
+    import re
+
     from sqlalchemy import text
 
+    tables = {
+        row[0]
+        for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'")).fetchall()
+    }
     for ddl in TRIGGERS:
+        m = re.search(r"\bON\s+([A-Za-z_][A-Za-z0-9_]*)", ddl)
+        if m and m.group(1) not in tables:
+            continue
         conn.execute(text(ddl))
 
 

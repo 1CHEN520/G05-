@@ -35,15 +35,15 @@ class Device(Base, TimestampMixin, SoftDeleteMixin):
     # ---- 关系 ----
     # 资产保护：不使用 delete-orphan，物理删除设备时由数据库外键 RESTRICT 拦截
     # 业务层的"删除"一律走软删（is_deleted=True）
-    points: Mapped[list["MeasurePoint"]] = relationship(
+    points: Mapped[list[MeasurePoint]] = relationship(
         back_populates="device",
         passive_deletes=True,
         lazy="selectin",
     )
-    records: Mapped[list["Record"]] = relationship(
+    records: Mapped[list[Record]] = relationship(
         back_populates="device", cascade="all, delete-orphan", passive_deletes=True
     )
-    alarms: Mapped[list["Alarm"]] = relationship(
+    alarms: Mapped[list[Alarm]] = relationship(
         back_populates="device", cascade="all, delete-orphan", passive_deletes=True
     )
 

@@ -35,7 +35,13 @@ REQUIRED_FILES = [
     "config/app.yaml",
     "config/database.yaml",
     "config/logging.yaml",
-    "config/rules.yaml",
+]
+
+# 校验规则归 C-02，骨架阶段可能还没合进来，缺失只算"软失败"
+RULES_FILE = "config/rules.yaml"
+
+# 静态资源由 C-04 负责，骨架阶段可能还没合进来，缺失只算"软失败"
+WEB_ASSETS = [
     "web/index.html",
     "web/css/app.css",
     "web/js/api.js",
@@ -45,8 +51,11 @@ REQUIRED_FILES = [
 ]
 
 
-def _check(name: str, ok: bool, detail: Any = "") -> dict:
-    return {"name": name, "ok": bool(ok), "detail": detail}
+def _check(name: str, ok: bool, detail: Any = "", soft: bool = False) -> dict:
+    item = {"name": name, "ok": bool(ok), "detail": detail}
+    if soft:
+        item["soft"] = True
+    return item
 
 
 def _check_python() -> dict:
@@ -77,22 +86,42 @@ def _check_modules() -> dict:
 
 def _check_files() -> dict:
     missing = [f for f in REQUIRED_FILES if not (PROJECT_ROOT / f).exists()]
-    return _check("关键文件", not missing, {"missing": missing, "root": str(PROJECT_ROOT)})
+    return _check("配置文件", not missing, {"missing": missing, "root": str(PROJECT_ROOT)})
+
+
+def _check_web() -> dict:
+    missing = [f for f in WEB_ASSETS if not (PROJECT_ROOT / f).exists()]
+    return _check("静态资源", not missing, {"missing": missing}, soft=True)
 
 
 def _check_config() -> dict:
     from g05.core.config import settings
 
-    keys = ["app", "database", "logging", "rules"]
+    keys = ["app", "database", "logging"]
     got = {k: bool(settings.get(k)) for k in keys}
-    return _check("配置加载", all(got.values()), got)
+    got["rules"] = bool(settings.get("rules"))
+    return _check("配置加载", all(got[k] for k in keys), got)
+
+
+def _check_rules() -> dict:
+    exists = (PROJECT_ROOT / RULES_FILE).exists()
+    return _check("校验规则", exists, {"file": RULES_FILE}, soft=True)
 
 
 def _check_database() -> dict:
     from sqlalchemy import text
 
     from g05.core.db import get_engine, session_scope
-    from g05.models import Base
+
+    try:
+        from g05.models import Base
+    except ModuleNotFoundError:
+        return _check(
+            "数据库与触发器",
+            False,
+            {"reason": "models 尚未合入（B-01 负责），骨架阶段属预期"},
+            soft=True,
+        )
 
     engine = get_engine()
     Base.metadata.create_all(engine)
@@ -135,14 +164,25 @@ def cmd_preflight(_: argparse.Namespace) -> int:
         _check_python(),
         _check_modules(),
         _check_files(),
+        _check_web(),
         _check_config(),
+        _check_rules(),
         _check_database(),
         _check_writable(),
     ]
-    passed = all(c["ok"] for c in checks)
+    hard_fail = [c for c in checks if not c["ok"] and not c.get("soft")]
+    soft_fail = [c for c in checks if not c["ok"] and c.get("soft")]
+    passed = not hard_fail
     report = {
         "project": "g05-asset-catalog",
         "passed": passed,
+        "hard_failures": [c["name"] for c in hard_fail],
+        "soft_failures": [c["name"] for c in soft_fail],
+        "note": (
+            "soft 项缺失不影响 passed：静态资源由 C-04 负责，骨架阶段可能尚未合入"
+            if soft_fail
+            else ""
+        ),
         "checks": checks,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2))

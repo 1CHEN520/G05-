@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import pytest
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DatabaseError
 
 from g05.audit.service import AuditService
 from g05.models.audit_log import AuditLog
-from g05.models.measure_point import MeasurePoint
 
 
 def test_audit_write_and_query(db):
@@ -46,7 +45,7 @@ def test_audit_delete_blocked_by_trigger(db):
     AuditService.record(db, table_name="device", action="INSERT", operator="a", record_id=1)
     db.commit()
 
-    with pytest.raises(Exception):
+    with pytest.raises(DatabaseError, match="append-only"):
         db.execute(text("DELETE FROM audit_log"))
         db.commit()
     db.rollback()

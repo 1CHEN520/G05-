@@ -161,7 +161,7 @@ def render_codeowners(roles_doc: dict) -> str:
         "# CODEOWNERS —— 按路径自动指派评审人",
         "# 语法：<路径模式>  <@GitHub用户名>",
         "#",
-        "# 当前状态：" + ("已填写 %d/%d 人" % (len(ready), len(roles))),
+        f"# 当前状态：已填写 {len(ready)}/{len(roles)} 人",
     ]
     if pending:
         lines.append("# 未填写：" + "、".join(r["code"] for r in pending))

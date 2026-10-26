@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
 import tempfile
@@ -30,9 +29,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from sqlalchemy import func, select, text  # noqa: E402
 
 from g05.core.config import PROJECT_ROOT  # noqa: E402
-from g05.core.db import get_engine, session_scope  # noqa: E402
+from g05.core.db import session_scope  # noqa: E402
 from g05.core.logging import get_logger  # noqa: E402
-from g05.models.audit_log import AuditLog  # noqa: E402
 from g05.models.device import Device  # noqa: E402
 from g05.models.measure_point import MeasurePoint  # noqa: E402
 

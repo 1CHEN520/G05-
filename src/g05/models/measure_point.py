@@ -45,11 +45,11 @@ class MeasurePoint(Base, TimestampMixin, SoftDeleteMixin):
     change_note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # ---- 关系 ----
-    device: Mapped["Device"] = relationship(back_populates="points", lazy="joined")
-    records: Mapped[list["Record"]] = relationship(
+    device: Mapped[Device] = relationship(back_populates="points", lazy="joined")
+    records: Mapped[list[Record]] = relationship(
         back_populates="point", cascade="all, delete-orphan", passive_deletes=True
     )
-    alarms: Mapped[list["Alarm"]] = relationship(
+    alarms: Mapped[list[Alarm]] = relationship(
         back_populates="point", cascade="all, delete-orphan", passive_deletes=True
     )
 

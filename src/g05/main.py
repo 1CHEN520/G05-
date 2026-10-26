@@ -11,7 +11,6 @@ from __future__ import annotations
 import importlib
 import time
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,7 +20,11 @@ from fastapi.staticfiles import StaticFiles
 from g05.core.config import PROJECT_ROOT, settings
 from g05.core.db import get_engine, healthcheck
 from g05.core.logging import get_logger, log_event
-from g05.models import Base
+
+try:  # 骨架阶段 models 可能还没合入（B-01 负责）
+    from g05.models import Base
+except ModuleNotFoundError:  # pragma: no cover - 只在骨架阶段触发
+    Base = None  # type: ignore[assignment]
 
 log = get_logger("main")
 
@@ -37,13 +40,19 @@ async def lifespan(app: FastAPI):
     from g05.core.schema import apply_triggers
 
     engine = get_engine()
-    Base.metadata.create_all(engine)
+    if Base is not None:
+        Base.metadata.create_all(engine)
+    else:  # pragma: no cover - 只在骨架阶段触发
+        log.warning("models.missing", extra={"extra_fields": {"hint": "B-01 的模型尚未合入"}})
     with engine.begin() as conn:
         apply_triggers(conn)
 
-    from g05.audit.service import install_auto_audit
+    try:
+        from g05.audit.service import install_auto_audit
 
-    install_auto_audit()
+        install_auto_audit()
+    except ModuleNotFoundError:  # pragma: no cover - 只在骨架阶段触发
+        log.warning("audit.missing", extra={"extra_fields": {"hint": "C-03 的审计模块尚未合入"}})
 
     info = healthcheck()
     log_event(log, "app.startup", **info)

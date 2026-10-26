@@ -64,7 +64,7 @@ class AuditLog(Base):
         new: dict[str, Any] | None = None,
         reason: str | None = None,
         trace_id: str | None = None,
-    ) -> "AuditLog":
+    ) -> AuditLog:
         """构造一条审计记录（尚未入库）。"""
         import json
 

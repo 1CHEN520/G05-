@@ -176,7 +176,7 @@ def main() -> int:
     # ---- 2. 里程碑 ----
     status, existing_ms = request("GET", f"{base}/milestones?state=all&per_page=100", args.token)
     ms_map = {m["title"]: m["number"] for m in (existing_ms or [])} if status == 200 else {}
-    for key, m in milestones.items():
+    for m in milestones.values():
         title = m["title"]
         if title in ms_map:
             continue

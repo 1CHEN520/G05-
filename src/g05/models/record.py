@@ -38,8 +38,8 @@ class Record(Base, TimestampMixin):
     # 数据质量标记：GOOD / BAD / UNCERTAIN
     quality: Mapped[str] = mapped_column(String(16), nullable=False, default="GOOD")
 
-    device: Mapped["Device"] = relationship(back_populates="records", lazy="select")
-    point: Mapped["MeasurePoint"] = relationship(back_populates="records", lazy="select")
+    device: Mapped[Device] = relationship(back_populates="records", lazy="select")
+    point: Mapped[MeasurePoint] = relationship(back_populates="records", lazy="select")
 
     __table_args__ = (
         # 最左前缀：按测点查时间段走此索引

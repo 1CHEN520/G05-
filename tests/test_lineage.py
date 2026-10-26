@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 
 import pytest
+from sqlalchemy.exc import DatabaseError
 
 from g05.lineage.impact import (
     build_graph,
@@ -77,11 +78,10 @@ def test_summary_groups_by_type(graph):
 
 def test_self_loop_rejected_by_trigger(graph):
     """数据库触发器应拦截自环边。"""
-    from sqlalchemy.exc import IntegrityError
 
-    node = register_node(graph, node_type="point", node_key="P_SELF", node_name="自环")
+    register_node(graph, node_type="point", node_key="P_SELF", node_name="自环")
     graph.commit()
-    with pytest.raises(Exception):
+    with pytest.raises(DatabaseError, match="self-loop"):
         register_edge(
             graph, upstream_key="P_SELF", downstream_key="P_SELF", upstream_type="point", downstream_type="point"
         )

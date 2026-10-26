@@ -15,7 +15,6 @@ from pathlib import Path
 # 让脚本能直接 python scripts/xxx.py 运行
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from sqlalchemy import text  # noqa: E402
 
 from g05.core.db import get_engine, healthcheck  # noqa: E402
 from g05.core.logging import get_logger, log_event  # noqa: E402

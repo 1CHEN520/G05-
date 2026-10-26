@@ -10,17 +10,17 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Iterator
+from typing import Any
 
 from sqlalchemy import event, select
-from sqlalchemy.orm import Session, SessionTransaction
+from sqlalchemy.orm import Session
 
 from g05.core.logging import get_logger
 from g05.models.audit_log import AuditLog
 from g05.models.base import Base
-from g05.models.measure_point import MeasurePoint
 
 log = get_logger("audit.service")
 
