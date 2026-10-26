@@ -27,6 +27,36 @@
 里面有：用哪种 AI、开工前准备什么、初始化提示词（直接复制粘贴）、环境配置提示词、日常四类提示词、红线。
 用法：第一次照着做一遍，之后只查"提示词"那一节。
 
+## 怎么发到每个人手上
+
+每人一份 zip，里面三样东西：**代码包 + 任务指导书 + AI 协作指南**。
+
+```bash
+# 1. 生成代码包（组长执行，产物在 dist/roles/<CODE>/，已被 .gitignore 排除）
+python scripts/make_role_bundles.py
+
+# 2. 打成 zip（产物在 dist/zips/G05-<CODE>.zip，9 个）
+python - <<'PY'
+import pathlib, zipfile
+pathlib.Path("dist/zips").mkdir(parents=True, exist_ok=True)
+for d in sorted(pathlib.Path("dist/roles").iterdir()):
+    if d.is_dir():
+        with zipfile.ZipFile(f"dist/zips/G05-{d.name}.zip", "w", zipfile.ZIP_DEFLATED) as z:
+            for f in d.rglob("*"):
+                if f.is_file():
+                    z.write(f, f.relative_to(d).as_posix())
+PY
+```
+
+发的时候把这两份文档也塞进去：
+
+| 文件 | 给谁 |
+|---|---|
+| `guides/任务指导书-<CODE>.md` | 组员的 **AI** 读 |
+| `guides/AI协作指南-<CODE>.md` | 组员**本人**读 |
+
+**发的时候说清一句话**：代码包里的 `_bundle/README.md` 写了推送步骤，照它做就行；推之前先看《AI 协作指南》第三节把环境配好。
+
 ## 所有人的共同底线
 
 1. **只改自己名下的文件**。归属见 [`collab/分工文件清单.md`](../collab/分工文件清单.md)。
