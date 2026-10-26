@@ -1,4 +1,4 @@
-/* Tab 切换与启动引导 —— 负责人：C-04（CRUD 与 API） */
+/* Tab 切换与启动引导 —— 负责人：C4（CRUD 与 API） */
 /* ---------------- Tab 切换（支持 URL hash 深链接） ---------------- */
 function activateTab(tab) {
   const btn = document.querySelector(`nav button[data-tab="${tab}"]`);

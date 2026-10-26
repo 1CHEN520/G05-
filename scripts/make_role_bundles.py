@@ -5,7 +5,7 @@
     python scripts/make_role_bundles.py --check    # 只检查归属，不落盘
 
 产出：
-    dist/roles/A-00/  ... 每份包含该角色负责的文件（保持相对路径）+ README.md + COMMIT_MSG.txt
+    dist/roles/A/  ... 每份包含该角色负责的文件（保持相对路径）+ README.md + COMMIT_MSG.txt
 
 为什么要拆包：
     组长只往远端推骨架，其余文件由各成员在自己的分支上 `git add` 后提交，
@@ -51,6 +51,9 @@ def list_files() -> list[str]:
         if rel.startswith("logs/") and rel != "logs/.gitkeep":
             continue
         if path.suffix in EXCLUDE_SUFFIX or path.name in EXCLUDE_NAMES:
+            continue
+        # Office/WPS 打开文件时生成的锁文件（~$xxx.xlsx），不属于任何人
+        if path.name.startswith("~$"):
             continue
         out.append(rel)
     return sorted(out)
@@ -106,7 +109,7 @@ BUNDLE_README = """# {code} · {title}
 包结构（`files/` 才是要拷进仓库的内容，`_bundle/` 是给你的说明）：
 
 ```
-C-01/
+C1/
 ├── _bundle/
 │   ├── README.md        ← 你正在看的这份
 │   └── COMMIT_MSG.txt   ← 提交信息，直接引用
@@ -129,13 +132,13 @@ git add -A
 git commit -F <本目录>/_bundle/COMMIT_MSG.txt
 git push -u origin {branch}
 
-# 5. 到 GitHub 上开 Pull Request，目标分支 main，请求 A-00 评审
+# 5. 到 GitHub 上开 Pull Request，目标分支 main，请求 A 评审
 ```
 
 ## 边界
 
-- 只改这个包里的文件。需要动别人的文件（比如 DTO、配置键）→ 先在 issue 里提，由 A-00 统一改。
-- 遇到必须改契约的情况，走「issue 讨论 → A-00 改契约 → 你 rebase」的流程，不要自己顺手改。
+- 只改这个包里的文件。需要动别人的文件（比如 DTO、配置键）→ 先在 issue 里提，由 A 统一改。
+- 遇到必须改契约的情况，走「issue 讨论 → A 改契约 → 你 rebase」的流程，不要自己顺手改。
 """
 
 COMMIT_MSG = """feat({code_lower}): {title}

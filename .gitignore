@@ -42,3 +42,6 @@ pp03.yml
 *.swp
 .DS_Store
 Thumbs.db
+
+# ---- Office/WPS 临时锁文件 ----
+~$*

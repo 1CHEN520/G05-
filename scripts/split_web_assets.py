@@ -1,12 +1,12 @@
 """把单文件 web/index.html 拆成可分工维护的多文件结构（一次性重构脚本）。
 
 拆分后：
-  web/index.html        结构骨架（C-04）
-  web/css/app.css       样式（C-04）
-  web/js/api.js         基础工具 + fetch 封装（C-04）
-  web/js/pages.js       总览/设备/测点/审计/导入 页面逻辑（C-04）
-  web/js/lineage.js     血缘影响面 + 环形图渲染（B-02）
-  web/js/main.js        Tab 切换与启动（C-04）
+  web/index.html        结构骨架（C4）
+  web/css/app.css       样式（C4）
+  web/js/api.js         基础工具 + fetch 封装（C4）
+  web/js/pages.js       总览/设备/测点/审计/导入 页面逻辑（C4）
+  web/js/lineage.js     血缘影响面 + 环形图渲染（B2）
+  web/js/main.js        Tab 切换与启动（C4）
 """
 
 from __future__ import annotations
@@ -37,30 +37,30 @@ assert "async function doImport" in lines[676]
 
 css = seg(8, 81)
 (ROOT / "web" / "css" / "app.css").write_text(
-    "/* G05 控制台样式 —— 负责人：C-04（CRUD 与 API） */\n" + css, encoding="utf-8"
+    "/* G05 控制台样式 —— 负责人：C4（CRUD 与 API） */\n" + css, encoding="utf-8"
 )
 
 api_js = seg(281, 309)
 (ROOT / "web" / "js" / "api.js").write_text(
-    "/* 基础工具与 HTTP 封装 —— 负责人：C-04（CRUD 与 API） */\n" + api_js, encoding="utf-8"
+    "/* 基础工具与 HTTP 封装 —— 负责人：C4（CRUD 与 API） */\n" + api_js, encoding="utf-8"
 )
 
 pages_js = seg(341, 466) + "\n" + seg(636, 743)
 (ROOT / "web" / "js" / "pages.js").write_text(
-    "/* 总览 / 设备 / 测点 / 审计 / 导入 页面逻辑 —— 负责人：C-04（CRUD 与 API） */\n"
+    "/* 总览 / 设备 / 测点 / 审计 / 导入 页面逻辑 —— 负责人：C4（CRUD 与 API） */\n"
     + pages_js,
     encoding="utf-8",
 )
 
 lineage_js = seg(468, 634)
 (ROOT / "web" / "js" / "lineage.js").write_text(
-    "/* 血缘影响面查询与分层环形图渲染 —— 负责人：B-02（血缘引擎） */\n" + lineage_js,
+    "/* 血缘影响面查询与分层环形图渲染 —— 负责人：B2（血缘引擎） */\n" + lineage_js,
     encoding="utf-8",
 )
 
 main_js = seg(311, 339) + "\n" + seg(745, 752)
 (ROOT / "web" / "js" / "main.js").write_text(
-    "/* Tab 切换与启动引导 —— 负责人：C-04（CRUD 与 API） */\n" + main_js,
+    "/* Tab 切换与启动引导 —— 负责人：C4（CRUD 与 API） */\n" + main_js,
     encoding="utf-8",
 )
 

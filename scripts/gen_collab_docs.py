@@ -90,10 +90,10 @@ def render_roster(roles_doc: dict, issues: list[dict]) -> str:
     lines += [
         "## 三、协作规则",
         "",
-        "1. **一个文件只有一个主人**。上表没出现的文件，找 A-00 补归属，不要私自新建目录。",
-        "2. **跨模块改动走 PR 讨论**。要改 `src/g05/schemas/dto.py`、`config/*.yaml` 这类公共文件，先在 issue 里说，由 A-00 改。",
+        "1. **一个文件只有一个主人**。上表没出现的文件，找 A 补归属，不要私自新建目录。",
+        "2. **跨模块改动走 PR 讨论**。要改 `src/g05/schemas/dto.py`、`config/*.yaml` 这类公共文件，先在 issue 里说，由 A 改。",
         "3. **PR 只包含自己包里的文件**。`git status` 里出现别人的文件，说明你跑错分支了。",
-        "4. **合并顺序按依赖**：M1 骨架 → M2 数据内核（B-01 先合）→ M3 功能 → M4 质量与文档。",
+        "4. **合并顺序按依赖**：M1 骨架 → M2 数据内核（B1 先合）→ M3 功能 → M4 质量与文档。",
         "",
     ]
     return "\n".join(lines)
@@ -208,7 +208,7 @@ PR_TEMPLATE = """## 这个 PR 做了什么
 ## 有没有改契约
 
 - [ ] 没有动 `src/g05/schemas/dto.py` / `config/*.yaml` / 数据库表结构
-- [ ] 动了，已在 issue 里与 A-00 确认（issue 链接：__）
+- [ ] 动了，已在 issue 里与 A 确认（issue 链接：__）
 
 ## 截图 / 数据
 

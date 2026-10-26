@@ -37,10 +37,10 @@ REQUIRED_FILES = [
     "config/logging.yaml",
 ]
 
-# 校验规则归 C-02，骨架阶段可能还没合进来，缺失只算"软失败"
+# 校验规则归 C2，骨架阶段可能还没合进来，缺失只算"软失败"
 RULES_FILE = "config/rules.yaml"
 
-# 静态资源由 C-04 负责，骨架阶段可能还没合进来，缺失只算"软失败"
+# 静态资源由 C4 负责，骨架阶段可能还没合进来，缺失只算"软失败"
 WEB_ASSETS = [
     "web/index.html",
     "web/css/app.css",
@@ -119,7 +119,7 @@ def _check_database() -> dict:
         return _check(
             "数据库与触发器",
             False,
-            {"reason": "models 尚未合入（B-01 负责），骨架阶段属预期"},
+            {"reason": "models 尚未合入（B1 负责），骨架阶段属预期"},
             soft=True,
         )
 
@@ -179,7 +179,7 @@ def cmd_preflight(_: argparse.Namespace) -> int:
         "hard_failures": [c["name"] for c in hard_fail],
         "soft_failures": [c["name"] for c in soft_fail],
         "note": (
-            "soft 项缺失不影响 passed：静态资源由 C-04 负责，骨架阶段可能尚未合入"
+            "soft 项缺失不影响 passed：静态资源由 C4 负责，骨架阶段可能尚未合入"
             if soft_fail
             else ""
         ),

@@ -17,7 +17,7 @@
 ## 有没有改契约
 
 - [ ] 没有动 `src/g05/schemas/dto.py` / `config/*.yaml` / 数据库表结构
-- [ ] 动了，已在 issue 里与 A-00 确认（issue 链接：__）
+- [ ] 动了，已在 issue 里与 A 确认（issue 链接：__）
 
 ## 截图 / 数据
 

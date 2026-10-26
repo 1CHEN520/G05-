@@ -1,4 +1,4 @@
-/* 基础工具与 HTTP 封装 —— 负责人：C-04（CRUD 与 API） */
+/* 基础工具与 HTTP 封装 —— 负责人：C4（CRUD 与 API） */
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 

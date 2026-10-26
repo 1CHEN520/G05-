@@ -21,7 +21,7 @@ from g05.core.config import PROJECT_ROOT, settings
 from g05.core.db import get_engine, healthcheck
 from g05.core.logging import get_logger, log_event
 
-try:  # 骨架阶段 models 可能还没合入（B-01 负责）
+try:  # 骨架阶段 models 可能还没合入（B1 负责）
     from g05.models import Base
 except ModuleNotFoundError:  # pragma: no cover - 只在骨架阶段触发
     Base = None  # type: ignore[assignment]
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
     if Base is not None:
         Base.metadata.create_all(engine)
     else:  # pragma: no cover - 只在骨架阶段触发
-        log.warning("models.missing", extra={"extra_fields": {"hint": "B-01 的模型尚未合入"}})
+        log.warning("models.missing", extra={"extra_fields": {"hint": "B1 的模型尚未合入"}})
     with engine.begin() as conn:
         apply_triggers(conn)
 
@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
 
         install_auto_audit()
     except ModuleNotFoundError:  # pragma: no cover - 只在骨架阶段触发
-        log.warning("audit.missing", extra={"extra_fields": {"hint": "C-03 的审计模块尚未合入"}})
+        log.warning("audit.missing", extra={"extra_fields": {"hint": "C3 的审计模块尚未合入"}})
 
     info = healthcheck()
     log_event(log, "app.startup", **info)

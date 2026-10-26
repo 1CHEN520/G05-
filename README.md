@@ -152,7 +152,7 @@ G05/
 │   ├── services/
 │   │   └── point_service.py    # 改名（带影响面）/ 软删 / 版本链
 │   ├── api/routes/             # devices, points, lineage, audit, imports
-│   ├── schemas/dto.py          # Pydantic 出入参（接口契约，归 A-00）
+│   ├── schemas/dto.py          # Pydantic 出入参（接口契约，归 A）
 │   └── main.py                 # FastAPI 入口
 ├── tests/                      # 46 个单测
 ├── scripts/
@@ -165,10 +165,10 @@ G05/
 │   ├── gen_collab_docs.py      # ★ 生成分工清单 / issues.md / CODEOWNERS
 │   └── create_issues.py        # ★ 批量建 GitHub Issue（幂等）
 ├── web/                        # 零依赖单页控制台（已按角色拆分）
-│   ├── index.html              #   结构（C-04）
-│   ├── css/app.css             #   样式（C-04）
-│   └── js/{api,pages,main}.js  #   页面逻辑（C-04）
-│       └── lineage.js          #   血缘图渲染（B-02）
+│   ├── index.html              #   结构（C4）
+│   ├── css/app.css             #   样式（C4）
+│   └── js/{api,pages,main}.js  #   页面逻辑（C4）
+│       └── lineage.js          #   血缘图渲染（B2）
 ├── collab/                     # ★ 协作：角色表 / 任务表 / 推送指南
 │   ├── roles.yaml              #   角色与文件归属（唯一事实来源）
 │   ├── issues.yaml             #   39 个任务（唯一事实来源）
@@ -272,15 +272,15 @@ pytest --cov=src/g05         # 覆盖率
 
 | 编号 | 角色 | 负责模块 | 分支 |
 |---|---|---|---|
-| `A-00` | 组长 / 架构师 | 骨架、接口契约、集成验收 | `feat/a00-bootstrap` |
-| `B-01` | 内核 · 数据建模与 ORM | `models/`、索引、外键策略、建库脚本 | `feat/b01-orm-core` |
-| `B-02` | 内核 · 血缘引擎 | `lineage/`、影响面、`web/js/lineage.js` | `feat/b02-lineage` |
-| `C-01` | 批量导入器 | `importers/bulk_importer.py`、导入接口 | `feat/c01-importer` |
-| `C-02` | 校验规则引擎 | `importers/validator.py`、`rules.yaml`、报告导出 | `feat/c02-validator` |
-| `C-03` | 审计与变更追踪 | `audit/`、`models/audit_log.py`、触发器 | `feat/c03-audit` |
-| `C-04` | CRUD 与控制台 | `api/routes/{devices,points}.py`、`web/` | `feat/c04-api-web` |
-| `C-05` | 测试与性能压测 | `tests/`、`fault_inject.py`、CI | `feat/c05-qa` |
-| `C-06` | 文档与运维 | `docs/`、运行手册、演示脚本 | `feat/c06-docs-ops` |
+| `A` | 组长 / 架构师 | 骨架、接口契约、集成验收 | `feat/a-bootstrap` |
+| `B1` | 内核 · 数据建模与 ORM | `models/`、索引、外键策略、建库脚本 | `feat/b1-orm-core` |
+| `B2` | 内核 · 血缘引擎 | `lineage/`、影响面、`web/js/lineage.js` | `feat/b2-lineage` |
+| `C1` | 批量导入器 | `importers/bulk_importer.py`、导入接口 | `feat/c1-importer` |
+| `C2` | 校验规则引擎 | `importers/validator.py`、`rules.yaml`、报告导出 | `feat/c2-validator` |
+| `C3` | 审计与变更追踪 | `audit/`、`models/audit_log.py`、触发器 | `feat/c3-audit` |
+| `C4` | CRUD 与控制台 | `api/routes/{devices,points}.py`、`web/` | `feat/c4-api-web` |
+| `C5` | 测试与性能压测 | `tests/`、`fault_inject.py`、CI | `feat/c5-qa` |
+| `C6` | 文档与运维 | `docs/`、运行手册、演示脚本 | `feat/c6-docs-ops` |
 
 协作流程（**不整包推远端**，每人只推自己那份文件）：
 

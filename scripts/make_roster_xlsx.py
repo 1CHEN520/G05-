@@ -1,7 +1,8 @@
 """生成《G05 团队角色清单》Excel —— 发给组员填写后回收。
 
 用法：
-    python scripts/make_roster_xlsx.py
+    python scripts/make_roster_xlsx.py              # 生成空白模板
+    python scripts/make_roster_xlsx.py --preserve   # 重新生成，但保留已填的人员信息
 
 产出：docs/团队角色清单.xlsx（3 个 sheet：填写表 / 填写说明 / 角色速览）
 回收后：
@@ -10,11 +11,12 @@
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
 import yaml
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -23,6 +25,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 OUT = ROOT / "docs" / "团队角色清单.xlsx"
+
+# 人员填写列（第 7~17 列）：重新生成模板时要原样搬过来的内容
+PERSON_COLS = list(range(7, 18))
 
 HEAD_FILL = PatternFill("solid", fgColor="1F4E79")
 FILL_ME = PatternFill("solid", fgColor="FFF7E0")      # 需要本人填
@@ -51,15 +56,15 @@ COLUMNS = [
 ]
 
 ROLE_BLURB = {
-    "A-00": "定契约、守骨架、做集成，对最终交付负责",
-    "B-01": "把业务语义落成不可违背的表结构与约束",
-    "B-02": "回答「改这个测点，谁会受影响」，且 1 秒内答出来",
-    "C-01": "万行 Excel 30 秒内入库，出错整批回滚",
-    "C-02": "脏数据进不来，规则改 YAML 就能改",
-    "C-03": "任何一次变更都能答出「谁、何时、为什么、改了什么」",
-    "C-04": "让资产目录能用：接口规范、页面能点",
-    "C-05": "用可重复的证据证明「能扛住」",
-    "C-06": "让没参与开发的人也能装起来、跑起来、救回来",
+    "A": "定契约、守骨架、做集成，对最终交付负责",
+    "B1": "把业务语义落成不可违背的表结构与约束",
+    "B2": "回答「改这个测点，谁会受影响」，且 1 秒内答出来",
+    "C1": "万行 Excel 30 秒内入库，出错整批回滚",
+    "C2": "脏数据进不来，规则改 YAML 就能改",
+    "C3": "任何一次变更都能答出「谁、何时、为什么、改了什么」",
+    "C4": "让资产目录能用：接口规范、页面能点",
+    "C5": "用可重复的证据证明「能扛住」",
+    "C6": "让没参与开发的人也能装起来、跑起来、救回来",
 }
 
 
@@ -170,7 +175,7 @@ def build() -> Workbook:
 
     rows = [
         ("填写范围", "只填《角色清单》里浅黄底色的 11 列。灰底列（角色代号/岗位/主责模块/分支）已经定好，改了会和仓库里的分工对不上。"),
-        ("角色代号", "A-00 组长（1 人）；B-01/B-02 内核骨干（2 人）；C-01~C-06 开发执行（6 人）。先认领想做的，再由组长平衡。"),
+        ("角色代号", "A 组长（1 人）；B1/B2 内核骨干（2 人）；C1~C6 开发执行（6 人）。先认领想做的，再由组长平衡。"),
         ("第二志愿", "填另一个角色代号。作用是：某人进度落后时，第二志愿的人能顶上去，不至于整条线卡死。"),
         ("熟练度 1-5", "1=没写过；2=跟着教程能改；3=能独立完成模块；4=能定位性能/并发问题；5=能带人做、能评审别人的代码。按真实水平填，虚高会害了自己。"),
         ("GitHub 用户名", "填你的 GitHub 账号（不是邮箱）。填了之后会自动生成 CODEOWNERS，你的目录有 PR 时自动指派你评审。"),
@@ -208,15 +213,15 @@ def build() -> Workbook:
     index, _ = build_index(roles, list_files())
 
     deliverable = {
-        "A-00": "骨架 + 契约 + 集成验收",
-        "B-01": "四表 + 约束 + 建库脚本",
-        "B-02": "血缘 BFS + 影响面接口 + 血缘图",
-        "C-01": "Excel 解析 + 批量入库",
-        "C-02": "规则引擎 + 评分门禁 + 报告导出",
-        "C-03": "审计留痕 + 防篡改 + 回溯查询",
-        "C-04": "CRUD 接口 + 控制台页面",
-        "C-05": "测试 + 故障注入 + 性能基线",
-        "C-06": "环境/运行手册 + 演示脚本",
+        "A": "骨架 + 契约 + 集成验收",
+        "B1": "四表 + 约束 + 建库脚本",
+        "B2": "血缘 BFS + 影响面接口 + 血缘图",
+        "C1": "Excel 解析 + 批量入库",
+        "C2": "规则引擎 + 评分门禁 + 报告导出",
+        "C3": "审计留痕 + 防篡改 + 回溯查询",
+        "C4": "CRUD 接口 + 控制台页面",
+        "C5": "测试 + 故障注入 + 性能基线",
+        "C6": "环境/运行手册 + 演示脚本",
     }
     for i, role in enumerate(roles):
         row = 3 + i
@@ -240,9 +245,45 @@ def build() -> Workbook:
     return wb
 
 
+def fill_from_old(wb: Workbook, old_path: Path) -> int:
+    """把旧表里已填的人员信息搬进新表。
+
+    两张表的角色行顺序都由 collab/roles.yaml 决定，因此按行号顺序对齐即可；
+    同时校验角色代号是否同名（改名场景下会不同，但顺序不变）。
+    """
+    old = load_workbook(old_path, data_only=True)
+    if "角色清单" not in old.sheetnames:
+        return 0
+    ws_old = old["角色清单"]
+    ws_new = wb["角色清单"]
+
+    moved = 0
+    for r in range(5, 14):
+        if not ws_old.cell(row=r, column=7).value:
+            continue
+        for c in PERSON_COLS:
+            ws_new.cell(row=r, column=c).value = ws_old.cell(row=r, column=c).value
+        moved += 1
+    return moved
+
+
 def main() -> int:
+    ap = argparse.ArgumentParser(description="生成团队角色清单 Excel")
+    ap.add_argument("--preserve", action="store_true", help="保留已填的人员信息")
+    args = ap.parse_args()
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    build().save(OUT)
+    wb = build()
+
+    if args.preserve and OUT.exists():
+        try:
+            moved = fill_from_old(wb, OUT)
+            print(f"已保留 {moved} 行人员信息")
+        except PermissionError:
+            print("警告：旧文件被占用（WPS/Excel 打开着），本次未保留已填内容")
+            return 1
+
+    wb.save(OUT)
     print(f"已生成 {OUT.relative_to(ROOT)}")
     return 0
 
