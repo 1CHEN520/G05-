@@ -3,9 +3,16 @@
 用法：
     python scripts/make_role_bundles.py            # 生成 dist/roles/<CODE>/
     python scripts/make_role_bundles.py --check    # 只检查归属，不落盘
+    python scripts/make_role_bundles.py --zip      # 顺带打成 dist/zips/G05-<CODE>.zip
 
 产出：
-    dist/roles/A/  ... 每份包含该角色负责的文件（保持相对路径）+ README.md + COMMIT_MSG.txt
+    dist/roles/<CODE>/
+    ├── _bundle/README.md          该角色的说明 + 推送步骤
+    ├── _bundle/COMMIT_MSG.txt     现成的提交信息
+    ├── _bundle/任务指导书-<CODE>.md   给组员的 AI 读
+    ├── _bundle/AI协作指南-<CODE>.md   给组员本人读
+    └── files/                     该角色负责的文件（保持相对路径）
+    --zip 时额外产出 dist/zips/G05-<CODE>.zip，一个 zip 就是一个人要的全部东西
 
 为什么要拆包：
     组长只往远端推骨架，其余文件由各成员在自己的分支上 `git add` 后提交，
@@ -104,16 +111,25 @@ BUNDLE_README = """# {code} · {title}
 
 {filelist}
 
+## 包里另外两份文档（先读这两份，再看代码）
+
+| 文件 | 给谁读 | 怎么用 |
+|---|---|---|
+| `_bundle/任务指导书-{code}.md` | **你的 AI** | 开工第一步，整篇丢给 AI，让它读完再动手 |
+| `_bundle/AI协作指南-{code}.md` | **你自己** | 照着第二节配环境，第四节复制初始化提示词 |
+
 ## 怎么用这个包
 
 包结构（`files/` 才是要拷进仓库的内容，`_bundle/` 是给你的说明）：
 
 ```
-C1/
+{code}/
 ├── _bundle/
-│   ├── README.md        ← 你正在看的这份
-│   └── COMMIT_MSG.txt   ← 提交信息，直接引用
-└── files/               ← 按原相对路径排好，整目录覆盖即可
+│   ├── README.md              ← 你正在看的这份
+│   ├── COMMIT_MSG.txt         ← 提交信息，直接引用
+│   ├── 任务指导书-{code}.md     ← 给 AI 读
+│   └── AI协作指南-{code}.md     ← 给你自己读
+└── files/                     ← 按原相对路径排好，整目录覆盖即可
 ```
 
 ```bash
@@ -183,10 +199,32 @@ def write_bundle(role: dict, files: list[str]) -> None:
         encoding="utf-8",
     )
 
+    # 把该角色的两份指导书放进 _bundle/，让一个包自成闭环，发的时候不用再单独找文档
+    for name in (f"任务指导书-{role['code']}.md", f"AI协作指南-{role['code']}.md"):
+        src = ROOT / "guides" / name
+        if src.is_file():
+            shutil.copy2(src, meta / name)
+
+
+def make_zip(code: str) -> Path:
+    """把一个角色目录打成 dist/zips/G05-<CODE>.zip。"""
+    import zipfile
+
+    src = DIST / code
+    out_dir = ROOT / "dist" / "zips"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    zpath = out_dir / f"G05-{code}.zip"
+    with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
+        for f in sorted(src.rglob("*")):
+            if f.is_file():
+                z.write(f, (Path(code) / f.relative_to(src)).as_posix())
+    return zpath
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="按角色拆分文件包")
     parser.add_argument("--check", action="store_true", help="只检查归属，不写文件")
+    parser.add_argument("--zip", action="store_true", help="同时打包成 dist/zips/G05-<CODE>.zip")
     args = parser.parse_args()
 
     spec = yaml.safe_load(ROLES_FILE.read_text(encoding="utf-8"))
@@ -213,6 +251,14 @@ def main() -> int:
     for role in roles:
         write_bundle(role, index[role["code"]])
     print(f"\n已生成 9 个文件包 -> {DIST}")
+
+    if args.zip:
+        print()
+        for role in roles:
+            zpath = make_zip(role["code"])
+            size = zpath.stat().st_size / 1024
+            print(f"  {zpath.relative_to(ROOT).as_posix():<28} {size:>7.1f} KB")
+        print(f"已生成 9 个压缩包 -> {ROOT / 'dist' / 'zips'}")
     return 0
 
 

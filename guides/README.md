@@ -29,33 +29,34 @@
 
 ## 怎么发到每个人手上
 
-每人一份 zip，里面三样东西：**代码包 + 任务指导书 + AI 协作指南**。
+**每人一个 zip，一个 zip 就是他要的全部东西**：说明 + 提交信息 + 两份指导书 + 他负责的代码。
 
 ```bash
-# 1. 生成代码包（组长执行，产物在 dist/roles/<CODE>/，已被 .gitignore 排除）
-python scripts/make_role_bundles.py
-
-# 2. 打成 zip（产物在 dist/zips/G05-<CODE>.zip，9 个）
-python - <<'PY'
-import pathlib, zipfile
-pathlib.Path("dist/zips").mkdir(parents=True, exist_ok=True)
-for d in sorted(pathlib.Path("dist/roles").iterdir()):
-    if d.is_dir():
-        with zipfile.ZipFile(f"dist/zips/G05-{d.name}.zip", "w", zipfile.ZIP_DEFLATED) as z:
-            for f in d.rglob("*"):
-                if f.is_file():
-                    z.write(f, f.relative_to(d).as_posix())
-PY
+# 组长执行一次，产出 dist/roles/<CODE>/ 九个目录 + dist/zips/G05-<CODE>.zip 九个压缩包
+# （dist/ 已被 .gitignore 排除，不会进远端）
+python scripts/make_role_bundles.py --zip
 ```
 
-发的时候把这两份文档也塞进去：
+包内结构：
 
-| 文件 | 给谁 |
-|---|---|
-| `guides/任务指导书-<CODE>.md` | 组员的 **AI** 读 |
-| `guides/AI协作指南-<CODE>.md` | 组员**本人**读 |
+```
+G05-C3.zip
+└── C3/
+    ├── _bundle/
+    │   ├── README.md              ← 推送步骤，照它做
+    │   ├── COMMIT_MSG.txt         ← 提交信息，直接 git commit -F 引用
+    │   ├── 任务指导书-C3.md        ← 丢给组员的 AI 读
+    │   └── AI协作指南-C3.md        ← 组员本人读
+    └── files/                     ← 他负责的文件，按原相对路径排好
+```
 
-**发的时候说清一句话**：代码包里的 `_bundle/README.md` 写了推送步骤，照它做就行；推之前先看《AI 协作指南》第三节把环境配好。
+**发的时候说清三句话**：
+
+1. 先按《AI 协作指南》第二节把 `pp03` 环境配好，再动代码。
+2. 《任务指导书》整篇丢给你的 AI，让它读完再开始。
+3. 只推 `files/` 里的文件到你自己的分支，步骤见 `_bundle/README.md`。
+
+谁拿哪个包、包里有什么、发放勾选表，见 [`collab/分发包发放清单.md`](../collab/分发包发放清单.md)。
 
 ## 所有人的共同底线
 
