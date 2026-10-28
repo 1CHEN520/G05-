@@ -1,0 +1,54 @@
+# ============================================================
+# G05 应用主配置（配置外置铁律：改配置不改代码）
+# 环境变量可覆盖：G05_APP__PORT=9000 形式
+# ============================================================
+
+app:
+  name: "G05 设备台账与测点资产目录"
+  version: "0.1.0"
+  env: "dev"                    # dev | test | prod
+  debug: true
+
+server:
+  host: "127.0.0.1"
+  port: 8000
+  workers: 1
+  # 请求超时（秒），防止长事务拖垮服务
+  request_timeout: 30
+
+# ---------------- 导入相关 ----------------
+import:
+  # 单次导入最大行数，超限直接拒绝（防内存打爆）
+  max_rows: 200000
+  # 批量 bulk 提交的分片大小
+  chunk_size: 1000
+  # 失败是否整批回滚（硬性要求：True）
+  rollback_on_error: true
+  # 是否允许更新已存在记录（按 device_code / point_code 判定）
+  allow_update: false
+  # 允许的 Excel 扩展名
+  allowed_ext: [".xlsx", ".xlsm"]
+
+# ---------------- 血缘相关 ----------------
+lineage:
+  # 影响面查询最大递归深度，防环导致栈溢出
+  max_depth: 10
+  # 查询结果最多返回节点数
+  max_nodes: 5000
+  # 是否检测循环依赖并告警
+  detect_cycle: true
+
+# ---------------- 查询相关 ----------------
+query:
+  default_page_size: 20
+  max_page_size: 200
+
+# ---------------- 审计相关 ----------------
+audit:
+  enabled: true
+  # 审计表禁止 UPDATE / DELETE（append-only），由触发器强制
+  append_only: true
+  # 需要审计的表
+  tables: ["device", "measure_point", "record", "alarm"]
+  # 审计查询默认返回上限
+  query_limit: 1000

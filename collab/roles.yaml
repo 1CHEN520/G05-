@@ -1,0 +1,218 @@
+# G05 角色与文件归属（唯一事实来源）
+# 用途：
+#   1. scripts/make_role_bundles.py 按此表把仓库拆成 9 个可独立推送的文件包
+#   2. scripts/gen_collab_docs.py   按此表生成《分工文件清单》与 CODEOWNERS
+# 规则：
+#   - 一个文件只能属于一个角色，避免两人改同一文件冲突
+#   - 目录用 `dir/**` 通配；具体文件写全路径
+#   - A 是骨架与契约的守门人，跨模块文件（DTO/配置/入口）统一归他
+
+project: G05 设备台账与测点资产目录
+repo_name: g05-asset-catalog
+package: g05
+env_name: pp03
+python: "3.12"
+default_branch: main
+remote_hint: 远端由组长创建空仓库，只推骨架；其余文件由各成员在自己的分支上推
+
+roles:
+  - code: A
+    level: A
+    title: 组长 / 架构师
+    short: 架构与集成
+    branch: feat/a-bootstrap
+    mission: 定契约、守骨架、做集成，对最终交付负责
+    owns:
+      - README.md
+      - pyproject.toml
+      - environment.yml
+      - requirements.txt
+      - requirements-dev.txt
+      - .gitignore
+      - .env.example
+      - Makefile
+      - run.bat
+      - setup_pp03.ps1
+      - config/app.yaml
+      - config/database.yaml
+      - config/logging.yaml
+      - src/g05/__init__.py
+      - src/g05/__main__.py
+      - src/g05/cli.py
+      - src/g05/main.py
+      - src/g05/core/**
+      - src/g05/schemas/dto.py
+      - src/g05/api/deps.py
+      - docs/00-项目框架与分工方案.md
+      - docs/02-架构设计.md
+      - docs/03-流程与标准映射.md
+      - guides/**
+      - .github/CODEOWNERS
+      - .github/pull_request_template.md
+      - .github/ISSUE_TEMPLATE/**
+      - collab/**
+      - scripts/make_role_bundles.py
+      - scripts/gen_collab_docs.py
+      - scripts/create_issues.py
+      - scripts/split_web_assets.py
+      - scripts/make_roster_xlsx.py
+      - scripts/apply_roster.py
+      - docs/团队角色清单.xlsx
+      - data/archive/.gitkeep
+      - data/db/.gitkeep
+      - logs/.gitkeep
+      - src/g05/api/__init__.py
+      - src/g05/api/routes/__init__.py
+      - src/g05/schemas/__init__.py
+      - src/g05/importers/__init__.py
+      - tests/__init__.py
+    reviews:
+      - src/g05/models/**
+      - src/g05/api/routes/**
+    skills: 架构设计 / 接口契约 / 集成调试 / 答辩表达
+
+  - code: B1
+    level: B
+    title: 内核骨干 · 数据建模与 ORM
+    short: 四表建模
+    branch: feat/b1-orm-core
+    mission: 把业务语义落成不可违背的表结构与约束
+    owns:
+      - src/g05/models/base.py
+      - src/g05/models/device.py
+      - src/g05/models/measure_point.py
+      - src/g05/models/record.py
+      - src/g05/models/alarm.py
+      - src/g05/models/lineage.py
+      - src/g05/models/__init__.py
+      - scripts/init_db.py
+      - tests/test_models.py
+      - docs/adr/ADR-001-orm-and-sqlite.md
+      - docs/adr/ADR-002-soft-delete-versioning.md
+    skills: SQLAlchemy 2.0 / ER 设计 / 索引与约束 / 迁移
+
+  - code: B2
+    level: B
+    title: 内核骨干 · 血缘引擎与影响面
+    short: 血缘 BFS
+    branch: feat/b2-lineage
+    mission: 回答"改这个测点，谁会受影响"，且 1 秒内答出来
+    owns:
+      - src/g05/lineage/**
+      - src/g05/api/routes/lineage.py
+      - web/js/lineage.js
+      - tests/test_lineage.py
+      - docs/adr/ADR-004-lineage-bfs.md
+    skills: 图遍历 / BFS / 前端 SVG 渲染 / 性能调优
+
+  - code: C1
+    level: C
+    title: 开发 · 批量导入器
+    short: Excel 导入
+    branch: feat/c1-importer
+    mission: 万行 Excel 30 秒内入库，出错整批回滚
+    owns:
+      - src/g05/importers/bulk_importer.py
+      - src/g05/api/routes/imports.py
+      - scripts/seed_data.py
+      - data/sample/**
+      - tests/test_importer.py
+    mentor: B1
+    skills: openpyxl / 批量写入 / 事务 / 性能剖析
+
+  - code: C2
+    level: C
+    title: 开发 · 校验规则引擎
+    short: 校验评分
+    branch: feat/c2-validator
+    mission: 脏数据进不来，且规则改 YAML 就能改，不用改代码
+    owns:
+      - src/g05/importers/validator.py
+      - src/g05/reports/**
+      - config/rules.yaml
+      - tests/test_validator.py
+    mentor: B1
+    skills: 规则引擎 / 数据质量 / 评分模型 / 报表导出
+
+  - code: C3
+    level: C
+    title: 开发 · 审计与变更追踪
+    short: 审计追溯
+    branch: feat/c3-audit
+    mission: 任何一次变更都能答出"谁、何时、为什么、改了什么"
+    owns:
+      - src/g05/models/audit_log.py
+      - src/g05/audit/**
+      - src/g05/api/routes/audit.py
+      - tests/test_audit.py
+      - docs/adr/ADR-003-audit-immutability.md
+    mentor: B2
+    skills: SQLAlchemy 事件 / 触发器 / 快照 diff / 防篡改
+
+  - code: C4
+    level: C
+    title: 开发 · CRUD 接口与控制台
+    short: 接口与前端
+    branch: feat/c4-api-web
+    mission: 让资产目录"能用"，接口规范、页面能点
+    owns:
+      - src/g05/api/routes/devices.py
+      - src/g05/api/routes/points.py
+      - src/g05/services/**
+      - web/index.html
+      - web/css/**
+      - web/js/api.js
+      - web/js/pages.js
+      - web/js/main.js
+    mentor: A
+    skills: FastAPI / REST 规范 / 分页 / 原生 JS + SVG
+
+  - code: C5
+    level: C
+    title: 开发 · 测试与性能压测
+    short: 质量门禁
+    branch: feat/c5-qa
+    mission: 用可重复的证据证明"能扛住"，而不是嘴上说
+    owns:
+      - tests/conftest.py
+      - tests/test_api.py
+      - scripts/fault_inject.py
+      - scripts/bench.py
+      - .github/workflows/**
+    mentor: A
+    skills: pytest / 故障注入 / 压测 / CI
+
+  - code: C6
+    level: C
+    title: 开发 · 文档与运维
+    short: 文档运维
+    branch: feat/c6-docs-ops
+    mission: 让没参与开发的人也能装起来、跑起来、出问题能救回来
+    owns:
+      - docs/01-需求规格.md
+      - docs/04-环境搭建步骤.md
+      - docs/05-导入模板说明.md
+      - docs/06-运维巡检清单.md
+      - docs/runbook.md
+      - docs/demo_script.md
+      - docs/踩坑记录.md
+    mentor: A
+    skills: 技术写作 / 运维手册 / 演示设计
+
+milestones:
+  M1:
+    title: M1 立项与骨架
+    week: 第 1 周
+    goal: 仓库能 clone、能装、能跑空壳；契约冻结，所有人知道边界
+  M2:
+    title: M2 数据内核
+    week: 第 2 周
+    goal: 表结构与约束就位，脏数据进不来，审计留痕通路打通
+  M3:
+    title: M3 业务功能
+    week: 第 3 周
+    goal: 导入、校验、血缘、CRUD、控制台全部可用
+  M4:
+    title: M4 集成验收与运维
+    week: 第 4 周
+    goal: 性能达标、故障可注入、文档齐全、能现场答辩

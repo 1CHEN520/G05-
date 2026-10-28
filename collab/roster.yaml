@@ -1,0 +1,49 @@
+# 人员信息（由 docs/团队角色清单.xlsx 回收而来）
+# 技能自评与每周工时列在表里是空的，按"空缺不计入"处理，这里不落 null
+members:
+  A:
+    name: 陈锦妍
+    student_id: '2025460978'
+    github: '@1CHEN520'
+    role_title: 组长 / 架构师
+  B1:
+    name: 刘涵
+    student_id: '2025461000'
+    github: '@ahh688'
+    role_title: 内核骨干 · 数据建模与 ORM
+  B2:
+    name: 卢思雨
+    student_id: '2025460782'
+    github: null
+    role_title: 内核骨干 · 血缘引擎与影响面
+    note: 清单里 GitHub 用户名空缺，需补填后重跑 apply_roster
+  C1:
+    name: 周翔
+    student_id: '2025460063'
+    github: '@jiuniuyimao666'
+    role_title: 开发 · 批量导入器
+  C2:
+    name: 李梓旭
+    student_id: '2025461082'
+    github: '@lzx123314'
+    role_title: 开发 · 校验规则引擎
+  C3:
+    name: 蒋蕊娴
+    student_id: '2025460094'
+    github: '@jiang3210656231'
+    role_title: 开发 · 审计与变更追踪
+  C4:
+    name: 唐国莉
+    student_id: '2025460581'
+    github: '@Tang-guo-li'
+    role_title: 开发 · CRUD 接口与控制台
+  C5:
+    name: 韩永健
+    student_id: '2025461305'
+    github: '@HC123-WW'
+    role_title: 开发 · 测试与性能压测
+  C6:
+    name: 王新宇
+    student_id: '2025460987'
+    github: '@jasonwang555'
+    role_title: 开发 · 文档与运维

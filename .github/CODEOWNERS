@@ -1,0 +1,115 @@
+# CODEOWNERS —— 按路径自动指派评审人
+# 语法：<路径模式>  <@GitHub用户名>
+#
+# 当前状态：已填写 8/9 人
+# 未填写：B2
+# 填法：把姓名与 GitHub 用户名填进 docs/团队角色清单.xlsx，
+#       然后执行 python scripts/apply_roster.py --xlsx docs/团队角色清单.xlsx
+
+# 默认：架构师兜底
+*  @1CHEN520
+
+# A 组长 / 架构师
+pyproject.toml  @1CHEN520
+environment.yml  @1CHEN520
+requirements.txt  @1CHEN520
+requirements-dev.txt  @1CHEN520
+.gitignore  @1CHEN520
+.env.example  @1CHEN520
+Makefile  @1CHEN520
+run.bat  @1CHEN520
+setup_pp03.ps1  @1CHEN520
+config/app.yaml  @1CHEN520
+config/database.yaml  @1CHEN520
+config/logging.yaml  @1CHEN520
+src/g05/__init__.py  @1CHEN520
+src/g05/__main__.py  @1CHEN520
+src/g05/cli.py  @1CHEN520
+src/g05/main.py  @1CHEN520
+src/g05/core/**  @1CHEN520
+src/g05/schemas/dto.py  @1CHEN520
+src/g05/api/deps.py  @1CHEN520
+docs/00-项目框架与分工方案.md  @1CHEN520
+docs/02-架构设计.md  @1CHEN520
+docs/03-流程与标准映射.md  @1CHEN520
+guides/**  @1CHEN520
+.github/CODEOWNERS  @1CHEN520
+.github/pull_request_template.md  @1CHEN520
+.github/ISSUE_TEMPLATE/**  @1CHEN520
+collab/**  @1CHEN520
+scripts/make_role_bundles.py  @1CHEN520
+scripts/gen_collab_docs.py  @1CHEN520
+scripts/create_issues.py  @1CHEN520
+scripts/split_web_assets.py  @1CHEN520
+scripts/make_roster_xlsx.py  @1CHEN520
+scripts/apply_roster.py  @1CHEN520
+docs/团队角色清单.xlsx  @1CHEN520
+data/archive/.gitkeep  @1CHEN520
+data/db/.gitkeep  @1CHEN520
+logs/.gitkeep  @1CHEN520
+src/g05/api/__init__.py  @1CHEN520
+src/g05/api/routes/__init__.py  @1CHEN520
+src/g05/schemas/__init__.py  @1CHEN520
+src/g05/importers/__init__.py  @1CHEN520
+tests/__init__.py  @1CHEN520
+
+# B1 内核骨干 · 数据建模与 ORM
+src/g05/models/base.py  @ahh688
+src/g05/models/device.py  @ahh688
+src/g05/models/measure_point.py  @ahh688
+src/g05/models/record.py  @ahh688
+src/g05/models/alarm.py  @ahh688
+src/g05/models/lineage.py  @ahh688
+src/g05/models/__init__.py  @ahh688
+scripts/init_db.py  @ahh688
+tests/test_models.py  @ahh688
+docs/adr/ADR-001-orm-and-sqlite.md  @ahh688
+docs/adr/ADR-002-soft-delete-versioning.md  @ahh688
+
+# B2 内核骨干 · 血缘引擎与影响面
+# 待填：B2
+# C1 开发 · 批量导入器
+src/g05/importers/bulk_importer.py  @jiuniuyimao666
+src/g05/api/routes/imports.py  @jiuniuyimao666
+scripts/seed_data.py  @jiuniuyimao666
+data/sample/**  @jiuniuyimao666
+tests/test_importer.py  @jiuniuyimao666
+
+# C2 开发 · 校验规则引擎
+src/g05/importers/validator.py  @lzx123314
+src/g05/reports/**  @lzx123314
+config/rules.yaml  @lzx123314
+tests/test_validator.py  @lzx123314
+
+# C3 开发 · 审计与变更追踪
+src/g05/models/audit_log.py  @jiang3210656231
+src/g05/audit/**  @jiang3210656231
+src/g05/api/routes/audit.py  @jiang3210656231
+tests/test_audit.py  @jiang3210656231
+docs/adr/ADR-003-audit-immutability.md  @jiang3210656231
+
+# C4 开发 · CRUD 接口与控制台
+src/g05/api/routes/devices.py  @Tang-guo-li
+src/g05/api/routes/points.py  @Tang-guo-li
+src/g05/services/**  @Tang-guo-li
+web/index.html  @Tang-guo-li
+web/css/**  @Tang-guo-li
+web/js/api.js  @Tang-guo-li
+web/js/pages.js  @Tang-guo-li
+web/js/main.js  @Tang-guo-li
+
+# C5 开发 · 测试与性能压测
+tests/conftest.py  @HC123-WW
+tests/test_api.py  @HC123-WW
+scripts/fault_inject.py  @HC123-WW
+scripts/bench.py  @HC123-WW
+.github/workflows/**  @HC123-WW
+
+# C6 开发 · 文档与运维
+docs/01-需求规格.md  @jasonwang555
+docs/04-环境搭建步骤.md  @jasonwang555
+docs/05-导入模板说明.md  @jasonwang555
+docs/06-运维巡检清单.md  @jasonwang555
+docs/runbook.md  @jasonwang555
+docs/demo_script.md  @jasonwang555
+docs/踩坑记录.md  @jasonwang555

@@ -1,0 +1,13 @@
+# G05 设备台账与测点资产目录 —— 第 2 层：运行依赖（版本锁定）
+# 安装方式（在 pp03 环境里）：
+#   python -m pip install -r requirements.txt
+# 说明：本层一律用 pip，不要用 conda 装同名包，否则会与 pip 版本打架。
+#       pandas / pydantic-settings 已移除——代码里没有任何 import（见 preflight 报告）。
+
+SQLAlchemy==2.0.36
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+PyYAML==6.0.2
+openpyxl==3.1.5
+python-multipart==0.0.20

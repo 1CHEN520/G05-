@@ -1,0 +1,47 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# ---- 项目数据（不提交本地库与日志）----
+data/db/*.db
+data/db/*.db-wal
+data/db/*.db-shm
+data/archive/*.csv.gz
+logs/*
+!logs/.gitkeep
+
+# 保留目录占位
+!data/db/.gitkeep
+!data/archive/.gitkeep
+!logs/.gitkeep
+!data/sample/*.xlsx
+
+# ---- 环境与密钥 ----
+.env
+*.local.yaml
+
+# ---- 本地临时产物（截图、临时测试文件）----
+.tmp_shots/
+.tmp_test/
+pp03.yml
+
+# ---- 编辑器 ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Office/WPS 临时锁文件 ----
+~$*
