@@ -119,6 +119,16 @@ def test_upstream_direction(graph):
     result = impact_of(graph, node_type="report", node_key="RPT_1", direction="upstream")
     assert {node.node_key for node in result.nodes} == {"DS_1", "P_A", "P_B"}
 
+    assert result.root is not None
+    key_by_id = {result.root.id: result.root.node_key}
+    key_by_id.update({node.id: node.node_key for node in result.nodes})
+    dataflow_edges = {(key_by_id[edge["source"]], key_by_id[edge["target"]]) for edge in result.edges}
+    assert dataflow_edges == {
+        ("P_A", "DS_1"),
+        ("P_B", "DS_1"),
+        ("DS_1", "RPT_1"),
+    }
+
 
 def test_max_depth_limits_traversal(graph):
     result = impact_of(
@@ -135,6 +145,17 @@ def test_zero_depth_returns_only_root(graph):
     result = impact_of(graph, node_type="point", node_key="P_A", max_depth=0)
     assert result.root is not None
     assert result.nodes == []
+
+
+def test_explicit_max_depth_cannot_exceed_configured_limit(graph, monkeypatch):
+    original_get = settings.get
+
+    def limited_get(key, default=None):
+        return 1 if key == "app.lineage.max_depth" else original_get(key, default)
+
+    monkeypatch.setattr(settings, "get", limited_get)
+    with pytest.raises(ValueError, match="app.lineage.max_depth"):
+        impact_of(graph, node_type="point", node_key="P_A", max_depth=2)
 
 
 def test_missing_node_returns_empty(graph):
@@ -289,18 +310,9 @@ def test_200_node_query_is_fast_and_sql_scales_with_depth(db):
     third_layer = [f"PERF_RPT_{index:03d}" for index in range(80)]
     register_nodes(
         db,
-        [
-            {"node_type": "dataset", "node_key": key, "node_name": key}
-            for key in first_layer
-        ]
-        + [
-            {"node_type": "task", "node_key": key, "node_name": key}
-            for key in second_layer
-        ]
-        + [
-            {"node_type": "report", "node_key": key, "node_name": key}
-            for key in third_layer
-        ],
+        [{"node_type": "dataset", "node_key": key, "node_name": key} for key in first_layer]
+        + [{"node_type": "task", "node_key": key, "node_name": key} for key in second_layer]
+        + [{"node_type": "report", "node_key": key, "node_name": key} for key in third_layer],
     )
     register_edges(
         db,
