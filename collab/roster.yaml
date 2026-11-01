@@ -14,9 +14,9 @@ members:
   B2:
     name: 卢思雨
     student_id: '2025460782'
-    github: null
+    github: '@Jasonlu555'
     role_title: 内核骨干 · 血缘引擎与影响面
-    note: 清单里 GitHub 用户名空缺，需补填后重跑 apply_roster
+    note: 清单 xlsx 已补填 GitHub=Jasonlu555（2026-11-01 确认，非排除法猜测）
   C1:
     name: 周翔
     student_id: '2025460063'

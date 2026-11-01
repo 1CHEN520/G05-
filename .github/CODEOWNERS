@@ -1,10 +1,7 @@
 # CODEOWNERS —— 按路径自动指派评审人
 # 语法：<路径模式>  <@GitHub用户名>
 #
-# 当前状态：已填写 8/9 人
-# 未填写：B2
-# 填法：把姓名与 GitHub 用户名填进 docs/团队角色清单.xlsx，
-#       然后执行 python scripts/apply_roster.py --xlsx docs/团队角色清单.xlsx
+# 当前状态：已填写 9/9 人
 
 # 默认：架构师兜底
 *  @1CHEN520
@@ -67,7 +64,12 @@ docs/adr/ADR-001-orm-and-sqlite.md  @ahh688
 docs/adr/ADR-002-soft-delete-versioning.md  @ahh688
 
 # B2 内核骨干 · 血缘引擎与影响面
-# 待填：B2
+src/g05/lineage/**  @Jasonlu555
+src/g05/api/routes/lineage.py  @Jasonlu555
+web/js/lineage.js  @Jasonlu555
+tests/test_lineage.py  @Jasonlu555
+docs/adr/ADR-004-lineage-bfs.md  @Jasonlu555
+
 # C1 开发 · 批量导入器
 src/g05/importers/bulk_importer.py  @jiuniuyimao666
 src/g05/api/routes/imports.py  @jiuniuyimao666
