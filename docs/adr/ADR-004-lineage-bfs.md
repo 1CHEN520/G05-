@@ -58,5 +58,15 @@ python -m pytest tests/test_lineage.py -q
 python -m pytest tests/test_lineage.py -k 200_node -q
 ```
 
+## Implementation clarification (2026-11)
+
+- The frontier path still prevents a back-edge from being enqueued as a new node.
+- Cycle reporting is produced by an iterative DFS over the collected subgraph so
+  cycles hidden by a diamond-shaped BFS discovery path are still reported.
+- Cycle output is rotated to the smallest node id before de-duplication, making
+  equivalent cycles stable without changing the public response shape.
+- Upstream traversal reverses the query columns only. Returned graph edges always
+  keep the data-flow orientation `upstream -> downstream` for SVG rendering.
+
 通过条件：200 个结果节点耗时 `<1s`，三层 BFS 的 `SELECT` 不超过 7 条。实际数字必须来自
 完成 B1 模型合入后的真实测试输出，不在 ADR 中预填未经运行的结果。

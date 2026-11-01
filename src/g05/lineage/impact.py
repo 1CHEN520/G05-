@@ -131,6 +131,9 @@ def _find_cycles(
                 continue
             if state[target] == 1:
                 cycle_ids = (*path[path_position[target] :], target)
+                ring = cycle_ids[:-1]
+                canonical_ring = min(ring[index:] + ring[:index] for index in range(len(ring)))
+                cycle_ids = (*canonical_ring, canonical_ring[0])
                 if cycle_ids not in signatures:
                     signatures.add(cycle_ids)
                     cycles.append([key_by_id[node_id] for node_id in cycle_ids])
@@ -162,7 +165,10 @@ def impact_of(
     if direction not in {"downstream", "upstream"}:
         raise ValueError(f"不支持的血缘方向: {direction}")
 
-    depth_limit = max_depth if max_depth is not None else settings.get("app.lineage.max_depth", 10)
+    configured_depth_limit = settings.get("app.lineage.max_depth", 10)
+    if max_depth is not None and max_depth > configured_depth_limit:
+        raise ValueError("max_depth cannot exceed app.lineage.max_depth " f"({configured_depth_limit})")
+    depth_limit = configured_depth_limit if max_depth is None else max_depth
     max_nodes = settings.get("app.lineage.max_nodes", 5000)
     detect_cycle = settings.get("app.lineage.detect_cycle", True)
     warn_ms = settings.get("app.lineage.warn_ms", 1000)
@@ -224,25 +230,29 @@ def impact_of(
         rows_by_id: dict[int, LineageNode] = {}
         if candidate_ids:
             node_rows = session.execute(
-                select(LineageNode)
-                .where(LineageNode.id.in_(candidate_ids))
-                .order_by(LineageNode.id)
+                select(LineageNode).where(LineageNode.id.in_(candidate_ids)).order_by(LineageNode.id)
             ).scalars()
             rows_by_id = {row.id: row for row in node_rows}
 
         next_frontier: list[_FrontierNode] = []
         for current in frontier:
             for target_id in targets_by_source[current.node_id]:
-                edge_signature = (current.node_id, target_id)
+                # Upstream queries reverse traversal, but response edges keep the
+                # real data-flow orientation: upstream -> downstream.
+                edge_signature = (
+                    (current.node_id, target_id)
+                    if direction == "downstream"
+                    else (target_id, current.node_id)
+                )
                 if target_id in current.path_ids:
                     if edge_signature not in edge_signatures:
-                        graph_edges.append({"source": current.node_id, "target": target_id})
+                        graph_edges.append({"source": edge_signature[0], "target": edge_signature[1]})
                         edge_signatures.add(edge_signature)
                     continue
 
                 if target_id in visited:
                     if edge_signature not in edge_signatures:
-                        graph_edges.append({"source": current.node_id, "target": target_id})
+                        graph_edges.append({"source": edge_signature[0], "target": edge_signature[1]})
                         edge_signatures.add(edge_signature)
                     continue
 
@@ -267,7 +277,7 @@ def impact_of(
                     )
                 )
                 if edge_signature not in edge_signatures:
-                    graph_edges.append({"source": current.node_id, "target": row.id})
+                    graph_edges.append({"source": edge_signature[0], "target": edge_signature[1]})
                     edge_signatures.add(edge_signature)
             if truncated:
                 break
@@ -348,14 +358,11 @@ def register_edge(
     downstream = resolve_node(session, downstream_type, downstream_key)
     if upstream is None or downstream is None:
         raise ValueError(
-            "节点不存在: "
-            f"{upstream_type}:{upstream_key} / {downstream_type}:{downstream_key}"
+            "节点不存在: " f"{upstream_type}:{upstream_key} / {downstream_type}:{downstream_key}"
         )
 
     field_predicate = (
-        LineageEdge.field_name.is_(None)
-        if field_name is None
-        else LineageEdge.field_name == field_name
+        LineageEdge.field_name.is_(None) if field_name is None else LineageEdge.field_name == field_name
     )
     stmt = select(LineageEdge).where(
         LineageEdge.upstream_id == upstream.id,
@@ -387,9 +394,7 @@ def register_edges(
 
 def build_graph(session: Session, limit: int = 500) -> dict[str, list[dict[str, Any]]]:
     """导出给前端使用的全图。"""
-    nodes = list(
-        session.execute(select(LineageNode).order_by(LineageNode.id).limit(limit)).scalars()
-    )
+    nodes = list(session.execute(select(LineageNode).order_by(LineageNode.id).limit(limit)).scalars())
     node_ids = [node.id for node in nodes]
     edges: list[dict[str, Any]] = []
     if node_ids:

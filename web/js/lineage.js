@@ -7,7 +7,7 @@ async function queryImpact() {
     const result = await api(
       `/api/lineage/impact?node_type=point&node_key=${encodeURIComponent(key)}&direction=${direction}`,
     );
-    showImpactResult(result);
+    showImpactResult(result, direction);
     const nodes = result.root ? [result.root, ...(result.nodes || [])] : (result.nodes || []);
     drawGraph({ nodes, edges: result.edges || [] }, result.root);
   } catch (error) {
@@ -15,7 +15,7 @@ async function queryImpact() {
   }
 }
 
-function showImpactResult(result) {
+function showImpactResult(result, direction = "downstream") {
   const summary = result.summary || {};
   $("#lin-summary").innerHTML = `
     <span class="pill blue">根节点 ${esc(result.root?.node_key || "-")}</span>
@@ -25,7 +25,10 @@ function showImpactResult(result) {
     ${result.cycles?.length ? '<span class="pill err">检测到循环依赖</span>' : ""}`;
   const nodes = result.nodes || [];
   if (!nodes.length) {
-    $("#lin-body").innerHTML = '<tr><td colspan="6" class="empty">该测点没有下游依赖（安全改名）</td></tr>';
+    const emptyMessage = direction === "upstream"
+      ? "该测点没有上游依赖"
+      : "该测点没有下游依赖（安全改名）";
+    $("#lin-body").innerHTML = `<tr><td colspan="6" class="empty">${emptyMessage}</td></tr>`;
     return;
   }
   $("#lin-body").innerHTML = nodes.map((node) => `

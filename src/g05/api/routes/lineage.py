@@ -2,28 +2,40 @@
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy.orm import Session
 
 from g05.api.deps import get_db
+from g05.core.config import settings
 from g05.lineage.impact import build_graph, impact_of, register_edge, register_node
 
 router = APIRouter(prefix="/lineage", tags=["血缘"])
 
+NodeKey = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=96),
+]
+NodeName = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=128),
+]
+
 
 class NodeRegister(BaseModel):
     node_type: str = Field(..., pattern="^(point|dataset|report|task|api)$")
-    node_key: str = Field(..., max_length=96)
-    node_name: str = Field(..., max_length=128)
+    node_key: NodeKey
+    node_name: NodeName
     owner: str | None = None
 
 
 class EdgeRegister(BaseModel):
     upstream_type: str = Field("point", pattern="^(point|dataset|report|task|api)$")
-    upstream_key: str
+    upstream_key: NodeKey
     downstream_type: str = Field("report", pattern="^(point|dataset|report|task|api)$")
-    downstream_key: str
+    downstream_key: NodeKey
     field_name: str | None = None
     relation: str = Field("read", pattern="^(read|join|aggregate)$")
 
@@ -36,6 +48,15 @@ def query_impact(
     direction: str = Query("downstream", pattern="^(downstream|upstream)$"),
     max_depth: int | None = Query(None, ge=0, le=20),
 ):
+    node_key = node_key.strip()
+    if not node_key or len(node_key) > 96:
+        raise HTTPException(422, "node_key must contain 1 to 96 non-whitespace characters")
+    configured_depth_limit = settings.get("app.lineage.max_depth", 10)
+    if max_depth is not None and max_depth > configured_depth_limit:
+        raise HTTPException(
+            422,
+            f"max_depth cannot exceed app.lineage.max_depth ({configured_depth_limit})",
+        )
     result = impact_of(
         db,
         node_type=node_type,
