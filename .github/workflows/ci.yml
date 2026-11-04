@@ -34,7 +34,12 @@ jobs:
       - name: 安装依赖
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-dev.txt
+          # Python 3.12 起 setuptools 不再随解释器分发，而项目用
+          # --no-build-isolation 做 editable 安装，必须先显式装上，
+          # 否则报 "Cannot import build backend 'setuptools.build_meta'"。
+          pip install setuptools wheel
+          # requirements-dev.txt 里已含 -r requirements.txt，不必重复装两遍
+          pip install -r requirements-dev.txt
           pip install --no-deps --no-build-isolation -e .
 
       - name: 依赖一致性检查
