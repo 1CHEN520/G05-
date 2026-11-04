@@ -45,3 +45,10 @@ Thumbs.db
 
 # ---- Office/WPS 临时锁文件 ----
 ~$*
+
+# ---- C5 测试/覆盖率产物（CI 生成，不入库） ----
+coverage.xml
+pytest-report.xml
+htmlcov/
+.ruff_cache/
+.pytest_cache/

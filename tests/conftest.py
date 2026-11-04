@@ -107,3 +107,45 @@ def bad_excel(tmp_path):
     path = tmp_path / "bad.xlsx"
     wb.save(path)
     return path
+
+
+# ------------------------------------------------------------
+# 接口层夹具
+# ------------------------------------------------------------
+@pytest.fixture()
+def api_client(db_path):
+    """一个指向临时库的 TestClient。
+
+    两处必须做对，否则接口用例会去碰生产库：
+
+    1. **覆盖 ``api.deps.get_db``**：路由依赖注入用的是这个生成器，
+       它内部走 ``session_scope()``；不覆盖的话请求会连到真实数据库。
+    2. **触发生命周期**：``main.lifespan`` 负责建表 + 装触发器 + 装自动审计，
+       用 ``TestClient`` 作为上下文管理器才会执行；不触发就没有触发器，
+       审计不可篡改的用例会假通过。
+
+    这里复用 ``db_path`` 而不是 ``db``，是因为 ``db`` 已经开了一个长事务会话，
+    API 请求走的是另一条连接，长事务会锁住写入。
+    """
+    from fastapi.testclient import TestClient
+
+    from g05.api import deps as api_deps
+    from g05.core.db import get_engine
+    from g05.main import app
+
+    engine = get_engine()
+    Base.metadata.create_all(engine)
+    with engine.begin() as conn:
+        apply_triggers(conn)
+
+    def _override_get_db():
+        """每次请求一个独立会话，提交由 session_scope 负责。"""
+        with session_scope() as session:
+            yield session
+
+    app.dependency_overrides[api_deps.get_db] = _override_get_db
+    try:
+        with TestClient(app) as client:
+            yield client
+    finally:
+        app.dependency_overrides.pop(api_deps.get_db, None)

@@ -1,0 +1,76 @@
+name: CI
+
+# 触发条件：推送到 main / 任意特性分支，以及所有 PR
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# 红灯必须挡住合并 —— 不用 continue-on-error
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: lint & test (py3.12)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      # 版本必须与本地 pp03 一致（3.12），否则会出现"本地绿、CI 红"
+      - name: 准备 Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+          pip install --no-deps --no-build-isolation -e .
+
+      - name: 依赖一致性检查
+        run: python -m pip check
+
+      - name: Ruff 静态检查
+        run: ruff check .
+
+      - name: 单元测试 + 覆盖率
+        run: |
+          python -m pytest -q \
+            --cov=src/g05 \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --junitxml=pytest-report.xml
+
+      - name: 覆盖率阈值门禁（核心四模块 ≥70%）
+        run: python scripts/check_coverage_gate.py coverage.xml --threshold 70
+
+      - name: 故障注入 5 类自检
+        run: python scripts/fault_inject.py --all
+
+      - name: 上传覆盖率报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            pytest-report.xml
+          if-no-files-found: ignore
+
+      - name: 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: pytest-report.xml
+          if-no-files-found: ignore
