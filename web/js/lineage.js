@@ -9,25 +9,59 @@ async function queryImpact() {
     );
     showImpactResult(result, direction);
     const nodes = result.root ? [result.root, ...(result.nodes || [])] : (result.nodes || []);
-    drawGraph({ nodes, edges: result.edges || [] }, result.root);
+    drawGraph({ nodes, edges: edgesFromPaths(result.root, result.nodes || [], direction) }, result.root);
   } catch (error) {
     toast("查询失败：" + error.message, "err");
   }
 }
 
+/* 裁定 3：/impact 响应不再带 edges，改由每条 path 还原 BFS 树，
+   并按方向还原成数据流方向 upstream → downstream，箭头语义与 /graph 一致。 */
+function edgesFromPaths(root, nodes, direction) {
+  const idByKey = new Map();
+  if (root) idByKey.set(root.node_key, root.id);
+  nodes.forEach((node) => idByKey.set(node.node_key, node.id));
+  const seen = new Set();
+  const edges = [];
+  nodes.forEach((node) => {
+    const path = node.path || [];
+    for (let index = 1; index < path.length; index += 1) {
+      const from = idByKey.get(path[index - 1]);
+      const to = idByKey.get(path[index]);
+      if (from === undefined || to === undefined) continue;
+      const [source, target] = direction === "upstream" ? [to, from] : [from, to];
+      const signature = `${source}-${target}`;
+      if (seen.has(signature)) continue;
+      seen.add(signature);
+      edges.push({ source, target });
+    }
+  });
+  return edges;
+}
+
+const TRUNCATED_BY_LABELS = { max_depth: "深度上限", max_nodes: "节点上限" };
+
 function showImpactResult(result, direction = "downstream") {
   const summary = result.summary || {};
+  const nodes = result.nodes || [];
+  const total = Number.isFinite(result.total) ? result.total : nodes.length;
+  const returned = Number.isFinite(result.returned) ? result.returned : nodes.length;
+  const truncatedBy = (result.truncated_by || [])
+    .map((reason) => TRUNCATED_BY_LABELS[reason] || reason);
+  const omitted = Object.entries(result.omitted_by_type || {});
   $("#lin-summary").innerHTML = `
     <span class="pill blue">根节点 ${esc(result.root?.node_key || "-")}</span>
-    <span class="pill ${result.total > 0 ? "warn" : "ok"}">影响 ${result.total} 个对象</span>
+    <span class="pill ${total > 0 ? "warn" : "ok"}">影响 ${total} 个对象</span>
     ${Object.entries(summary).map(([key, value]) => `<span class="pill">${key}: ${value}</span>`).join("")}
-    ${result.truncated ? '<span class="pill err">结果已截断</span>' : ""}
+    ${result.truncated ? `<span class="pill err">已截断${truncatedBy.length ? "：" + esc(truncatedBy.join("/")) : ""}｜已返回 ${returned}</span>` : ""}
+    ${omitted.map(([key, value]) => `<span class="pill err">未返回 ${esc(key)}: ${value}</span>`).join("")}
     ${result.cycles?.length ? '<span class="pill err">检测到循环依赖</span>' : ""}`;
-  const nodes = result.nodes || [];
   if (!nodes.length) {
-    const emptyMessage = direction === "upstream"
-      ? "该测点没有上游依赖"
-      : "该测点没有下游依赖（安全改名）";
+    const emptyMessage = total > 0
+      ? `本次未返回节点（已截断，共 ${total} 个受影响对象）`
+      : direction === "upstream"
+        ? "该测点没有上游依赖"
+        : "该测点没有下游依赖（安全改名）";
     $("#lin-body").innerHTML = `<tr><td colspan="6" class="empty">${emptyMessage}</td></tr>`;
     return;
   }
@@ -49,9 +83,12 @@ async function loadGraph() {
     drawGraph(graph, null);
     const counts = {};
     graph.nodes.forEach((node) => { counts[node.type] = (counts[node.type] || 0) + 1; });
+    const total = Number.isFinite(graph.total) ? graph.total : graph.nodes.length;
+    const returned = Number.isFinite(graph.returned) ? graph.returned : graph.nodes.length;
     $("#lin-summary").innerHTML = `
-      <span class="pill blue">全图 ${graph.nodes.length} 节点 / ${graph.edges.length} 条边</span>
-      ${Object.entries(counts).map(([key, value]) => `<span class="pill">${key}: ${value}</span>`).join("")}`;
+      <span class="pill blue">全图 ${returned}/${total} 节点 / ${(graph.edges || []).length} 条边</span>
+      ${Object.entries(counts).map(([key, value]) => `<span class="pill">${key}: ${value}</span>`).join("")}
+      ${graph.truncated ? `<span class="pill err">已截断：仅显示前 ${returned} 个节点</span>` : ""}`;
     $("#lin-body").innerHTML =
       '<tr><td colspan="6" class="empty">全图模式只展示结构；输入测点编号可查看该测点的影响清单</td></tr>';
   } catch (error) {

@@ -7,7 +7,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from g05.core.config import settings
@@ -32,18 +32,32 @@ class ImpactNode:
 
 @dataclass
 class ImpactResult:
-    """影响面查询结果。"""
+    """影响面查询结果。
+
+    截断语义按 A 的裁定（2026-11-01，方案 2）：
+    ``total`` 是**完整可达节点数**（不含 root，截断与否都如实计数），
+    ``returned`` 是本次实际返回的节点数；两者之差按类型记入 ``omitted_by_type``，
+    被谁截断记入 ``truncated_by``（``max_depth`` / ``max_nodes`` 的子集）。
+    """
 
     root: ImpactNode | None
     direction: str
     nodes: list[ImpactNode]
     truncated: bool
     cycles: list[list[str]]
+    total: int = 0
+    returned: int = 0
+    truncated_by: list[str] = field(default_factory=list)
+    omitted_by_type: dict[str, int] = field(default_factory=dict)
+    # 仅内部使用（环检测与调试），按裁定不进入 /impact 响应体
     edges: list[dict[str, int]] = field(default_factory=list)
 
-    @property
-    def total(self) -> int:
-        return len(self.nodes)
+    def __post_init__(self) -> None:
+        # 兜底：未显式给出计数时，按"未截断"处理，避免出现 total=0 的假数据
+        if not self.returned:
+            self.returned = len(self.nodes)
+        if not self.total:
+            self.total = self.returned
 
     def by_type(self) -> dict[str, list[ImpactNode]]:
         grouped: dict[str, list[ImpactNode]] = {}
@@ -56,9 +70,11 @@ class ImpactResult:
             "root": self.root.__dict__ if self.root else None,
             "direction": self.direction,
             "total": self.total,
+            "returned": self.returned,
             "truncated": self.truncated,
+            "truncated_by": self.truncated_by,
+            "omitted_by_type": self.omitted_by_type,
             "cycles": self.cycles,
-            "edges": self.edges,
             "nodes": [node.__dict__ for node in self.nodes],
             "summary": {node_type: len(nodes) for node_type, nodes in self.by_type().items()},
         }
@@ -141,6 +157,108 @@ def _find_cycles(
     return cycles
 
 
+def _collect_reachable(
+    session: Session,
+    source_column: Any,
+    target_column: Any,
+    root_id: int,
+) -> tuple[dict[int, str], int]:
+    """只收集 id 与类型、不建路径的计数遍历。
+
+    按 A 的裁定用于"诚实截断"：主遍历被 ``max_nodes`` 截断、或被 ``max_depth``
+    限制时，用这一遍给出完整可达节点数。因此它**忽略** ``max_nodes`` 与
+    ``max_depth`` 两个上限，只保留 ``visited`` 防环。
+    验收规模（≤200 节点）下开销可忽略；规模上到几千节点后应改为分页或预聚合，
+    见 ADR-004 "未来工作"。
+
+    返回 ``(id -> node_type, 达到的最大深度)``，不含 root。
+    """
+    seen: set[int] = {root_id}
+    type_by_id: dict[int, str] = {}
+    frontier: list[int] = [root_id]
+    depth = 0
+    max_depth_reached = 0
+
+    while frontier:
+        depth += 1
+        rows = session.execute(select(source_column, target_column).where(source_column.in_(frontier))).all()
+        pending: list[int] = []
+        for _source_id, target_id in rows:
+            if target_id in seen:
+                continue
+            seen.add(target_id)
+            pending.append(target_id)
+        if not pending:
+            break
+        type_rows = session.execute(
+            select(LineageNode.id, LineageNode.node_type)
+            .where(LineageNode.id.in_(pending))
+            .order_by(LineageNode.id)
+        ).all()
+        for node_id, node_type in type_rows:
+            type_by_id[node_id] = node_type
+        max_depth_reached = depth
+        # 悬空边（边指向不存在的节点）不再展开，避免反复查询同一批 id
+        frontier = [node_id for node_id in pending if node_id in type_by_id]
+
+    return type_by_id, max_depth_reached
+
+
+def _truncation_metadata(
+    *,
+    session: Session,
+    source_column: Any,
+    target_column: Any,
+    root_id: int,
+    results: list[ImpactNode],
+    depth_limit: int,
+    frontier: list[_FrontierNode],
+    hit_max_nodes: bool,
+) -> tuple[int, int, list[str], dict[str, int]]:
+    """按 A 的裁定计算 ``total / returned / truncated_by / omitted_by_type``。
+
+    只有"确实被截断"时才付第二遍计数的代价：``max_nodes`` 命中必然要计数；
+    深度受限时先用一条探针确认还有边，避免叶子图白跑一遍。
+    """
+    returned = len(results)
+    depth_limited = bool(frontier) and frontier[0].depth >= depth_limit
+    needs_count = hit_max_nodes
+    if not needs_count and depth_limited:
+        already_returned = {root_id, *(node.id for node in results)}
+        probe = session.execute(
+            select(target_column)
+            .where(
+                source_column.in_([item.node_id for item in frontier]),
+                target_column.not_in(already_returned),
+            )
+            .limit(1)
+        ).first()
+        needs_count = probe is not None
+    if not needs_count:
+        return returned, returned, [], {}
+
+    type_by_id, max_depth_reached = _collect_reachable(session, source_column, target_column, root_id)
+    total = len(type_by_id)
+    if total <= returned:
+        # 探针只命中了回边（目标已访问），实际没有遗漏
+        return returned, returned, [], {}
+
+    returned_ids = {node.id for node in results}
+    omitted: dict[str, int] = {}
+    for node_id in sorted(type_by_id):
+        if node_id in returned_ids:
+            continue
+        node_type = type_by_id[node_id]
+        omitted[node_type] = omitted.get(node_type, 0) + 1
+
+    truncated_by: list[str] = []
+    if max_depth_reached > depth_limit:
+        truncated_by.append("max_depth")
+    if hit_max_nodes:
+        truncated_by.append("max_nodes")
+    return total, returned, truncated_by, omitted
+
+
 def resolve_node(session: Session, node_type: str, node_key: str) -> LineageNode | None:
     stmt = select(LineageNode).where(
         LineageNode.node_type == node_type,
@@ -161,6 +279,11 @@ def impact_of(
 
     每层只批量查询一次边和一次节点。节点在入队时加入 ``visited``，
     所以菱形依赖不会重复计数；只有回到当前路径中的祖先才报告为环。
+
+    返回值带诚实截断元数据（A 裁定 2026-11-01 决定 1）：
+    ``total`` 为完整可达节点数（不含 root），``returned`` 为实际返回数，
+    ``truncated_by`` 说明被 ``max_depth`` 还是 ``max_nodes`` 截断，
+    ``omitted_by_type`` 给出未返回节点按类型的计数。
     """
     if direction not in {"downstream", "upstream"}:
         raise ValueError(f"不支持的血缘方向: {direction}")
@@ -284,14 +407,28 @@ def impact_of(
         frontier = next_frontier
 
     cycles = _find_cycles(graph_edges, key_by_id, root_row.id) if detect_cycle else []
+    total, returned, truncated_by, omitted_by_type = _truncation_metadata(
+        session=session,
+        source_column=source_column,
+        target_column=target_column,
+        root_id=root_row.id,
+        results=results,
+        depth_limit=depth_limit,
+        frontier=frontier,
+        hit_max_nodes=truncated,
+    )
+    truncated = total > returned
+
     elapsed_ms = (time.perf_counter() - started) * 1000
     fields = {
         "root": f"{node_type}:{node_key}",
         "direction": direction,
-        "total": len(results),
+        "total": total,
+        "returned": returned,
+        "truncated": truncated,
+        "truncated_by": truncated_by,
         "cycles": len(cycles),
         "layers": traversed_layers,
-        "truncated": truncated,
         "elapsed_ms": round(elapsed_ms, 3),
     }
     log_event(log, "lineage.impact", **fields)
@@ -304,6 +441,10 @@ def impact_of(
         nodes=results,
         truncated=truncated,
         cycles=cycles,
+        total=total,
+        returned=returned,
+        truncated_by=truncated_by,
+        omitted_by_type=omitted_by_type,
         edges=graph_edges,
     )
 
@@ -392,8 +533,14 @@ def register_edges(
     return [register_edge(session, **dict(edge)) for edge in edges]
 
 
-def build_graph(session: Session, limit: int = 500) -> dict[str, list[dict[str, Any]]]:
-    """导出给前端使用的全图。"""
+def build_graph(session: Session, limit: int = 500) -> dict[str, Any]:
+    """导出给前端使用的全图。
+
+    按 A 的裁定（决定 2，方案 1）保留 induced-graph 语义（边两端都在返回节点集内），
+    另加 ``total`` / ``returned`` / ``truncated``，让前端不再把前 N 个节点说成"全图"。
+    不引入 cursor 分页；超过 1000 节点再启用，见 ADR-004 "未来工作"。
+    """
+    total = int(session.execute(select(func.count()).select_from(LineageNode)).scalar_one())
     nodes = list(session.execute(select(LineageNode).order_by(LineageNode.id).limit(limit)).scalars())
     node_ids = [node.id for node in nodes]
     edges: list[dict[str, Any]] = []
@@ -415,6 +562,7 @@ def build_graph(session: Session, limit: int = 500) -> dict[str, list[dict[str, 
             }
             for edge in edge_rows
         ]
+    returned = len(nodes)
     return {
         "nodes": [
             {
@@ -427,4 +575,7 @@ def build_graph(session: Session, limit: int = 500) -> dict[str, list[dict[str, 
             for node in nodes
         ],
         "edges": edges,
+        "total": total,
+        "returned": returned,
+        "truncated": total > returned,
     }

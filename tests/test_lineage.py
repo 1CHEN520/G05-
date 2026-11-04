@@ -139,12 +139,39 @@ def test_max_depth_limits_traversal(graph):
         max_depth=1,
     )
     assert {node.node_key for node in result.nodes} == {"DS_1"}
+    # 裁定 1：深度受限必须如实报出总数与被截断的原因
+    assert result.returned == 1
+    assert result.total == 3
+    assert result.truncated is True
+    assert result.truncated_by == ["max_depth"]
+    assert result.omitted_by_type == {"report": 1, "task": 1}
 
 
 def test_zero_depth_returns_only_root(graph):
     result = impact_of(graph, node_type="point", node_key="P_A", max_depth=0)
     assert result.root is not None
     assert result.nodes == []
+    assert result.returned == 0
+    assert result.total == 3
+    assert result.truncated is True
+    assert result.truncated_by == ["max_depth"]
+
+
+def test_upstream_depth_limit_reports_complete_total(graph):
+    result = impact_of(
+        graph,
+        node_type="report",
+        node_key="RPT_1",
+        direction="upstream",
+        max_depth=1,
+    )
+
+    assert {node.node_key for node in result.nodes} == {"DS_1"}
+    assert result.total == 3
+    assert result.returned == 1
+    assert result.truncated is True
+    assert result.truncated_by == ["max_depth"]
+    assert result.omitted_by_type == {"point": 2}
 
 
 def test_explicit_max_depth_cannot_exceed_configured_limit(graph, monkeypatch):
@@ -162,6 +189,10 @@ def test_missing_node_returns_empty(graph):
     result = impact_of(graph, node_type="point", node_key="NOT_EXIST")
     assert result.root is None
     assert result.nodes == []
+    assert result.total == 0
+    assert result.returned == 0
+    assert result.truncated is False
+    assert result.truncated_by == []
 
 
 def test_invalid_direction_rejected(graph):
@@ -183,6 +214,54 @@ def test_two_node_cycle_is_reported_without_looping(graph):
 
     assert ["P_A", "DS_1", "P_A"] in result.cycles
     assert {node.node_key for node in result.nodes} == {"DS_1", "RPT_1", "TASK_1"}
+
+
+def test_cycle_at_depth_boundary_does_not_trigger_count_bfs(db):
+    register_nodes(
+        db,
+        [
+            {"node_type": "point", "node_key": "CYCLE_A", "node_name": "Cycle A"},
+            {"node_type": "dataset", "node_key": "CYCLE_B", "node_name": "Cycle B"},
+        ],
+    )
+    register_edges(
+        db,
+        [
+            {
+                "upstream_key": "CYCLE_A",
+                "downstream_key": "CYCLE_B",
+                "upstream_type": "point",
+                "downstream_type": "dataset",
+            },
+            {
+                "upstream_key": "CYCLE_B",
+                "downstream_key": "CYCLE_A",
+                "upstream_type": "dataset",
+                "downstream_type": "point",
+            },
+        ],
+    )
+    db.commit()
+
+    select_count = 0
+
+    def count_selects(_conn, _cursor, statement, _parameters, _context, _executemany):
+        nonlocal select_count
+        if statement.lstrip().upper().startswith("SELECT"):
+            select_count += 1
+
+    engine = db.get_bind()
+    event.listen(engine, "before_cursor_execute", count_selects)
+    try:
+        result = impact_of(db, node_type="point", node_key="CYCLE_A", max_depth=1)
+    finally:
+        event.remove(engine, "before_cursor_execute", count_selects)
+
+    assert result.total == result.returned == 1
+    assert result.truncated is False
+    assert result.truncated_by == []
+    # root + one edge batch + one node batch + one unvisited-target probe
+    assert select_count == 4
 
 
 def test_diamond_dependency_is_not_a_cycle(graph):
@@ -270,8 +349,56 @@ def test_result_truncation_is_explicit(graph, monkeypatch):
     monkeypatch.setattr(settings, "get", limited_get)
     result = impact_of(graph, node_type="point", node_key="P_A")
 
+    # 裁定 1：total 是完整可达节点数，returned 才是实际返回数
     assert result.truncated is True
-    assert result.total == 2
+    assert result.total == 3
+    assert result.returned == 2
+    assert result.truncated_by == ["max_nodes"]
+    assert result.omitted_by_type == {"task": 1}
+
+
+def test_depth_and_node_limits_can_both_truncate(graph, monkeypatch):
+    register_node(graph, node_type="dataset", node_key="DS_2", node_name="Second branch")
+    register_edge(
+        graph,
+        upstream_key="P_A",
+        downstream_key="DS_2",
+        upstream_type="point",
+        downstream_type="dataset",
+    )
+    graph.commit()
+    original_get = settings.get
+
+    def limited_get(key, default=None):
+        return 1 if key == "app.lineage.max_nodes" else original_get(key, default)
+
+    monkeypatch.setattr(settings, "get", limited_get)
+    result = impact_of(graph, node_type="point", node_key="P_A", max_depth=1)
+
+    assert result.total == 4
+    assert result.returned == 1
+    assert result.truncated is True
+    assert result.truncated_by == ["max_depth", "max_nodes"]
+    assert result.omitted_by_type == {"dataset": 1, "report": 1, "task": 1}
+
+
+def test_complete_result_reports_equal_total_and_returned(graph):
+    result = impact_of(graph, node_type="point", node_key="P_A", direction="downstream")
+
+    assert result.truncated is False
+    assert result.truncated_by == []
+    assert result.omitted_by_type == {}
+    assert result.total == result.returned == 3
+
+
+def test_impact_payload_matches_frozen_contract(graph):
+    """裁定 3：/impact 不再输出 edges，只保留节点 + 路径 + 环 + 截断元数据。"""
+    payload = impact_of(graph, node_type="point", node_key="P_A").to_dict()
+
+    assert "edges" not in payload
+    for key in ("total", "returned", "truncated", "truncated_by", "omitted_by_type"):
+        assert key in payload
+    assert payload["nodes"][0]["path"] == ["P_A", "DS_1"]
 
 
 def test_self_loop_rejected_by_trigger(graph):
@@ -293,6 +420,18 @@ def test_build_graph_returns_nodes_and_edges(graph):
     exported = build_graph(graph)
     assert len(exported["nodes"]) == 5
     assert len(exported["edges"]) == 4
+    assert exported["total"] == 5
+    assert exported["returned"] == 5
+    assert exported["truncated"] is False
+
+
+def test_build_graph_reports_truncation(graph):
+    """裁定 2：limit 生效时必须给出 total/returned/truncated，不许假装是全图。"""
+    exported = build_graph(graph, limit=2)
+
+    assert exported["returned"] == 2
+    assert exported["total"] == 5
+    assert exported["truncated"] is True
 
 
 def test_impact_graph_contains_root_and_dependency_edges(graph):
@@ -369,5 +508,8 @@ def test_200_node_query_is_fast_and_sql_scales_with_depth(db):
         event.remove(engine, "before_cursor_execute", count_selects)
 
     assert result.total == 200
+    assert result.returned == 200
+    assert result.truncated is False
     assert elapsed < 1.0, f"影响面查询耗时 {elapsed:.3f}s，超过 1 秒"
-    assert select_count <= 7, f"三层 BFS 执行了 {select_count} 条 SELECT，疑似 N+1"
+    # 口径：1 条根节点 + 每层 2 条（边 + 节点）× 3 层 + 1 条深度探针
+    assert select_count <= 8, f"三层 BFS 执行了 {select_count} 条 SELECT，疑似 N+1"
