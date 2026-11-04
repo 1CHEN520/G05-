@@ -1,10 +1,12 @@
 name: CI
 
-# 触发条件：推送到 main / 任意特性分支，以及所有 PR
+# 触发条件：推送到 main / 任意特性分支，所有 PR，以及手动重跑
 on:
   push:
     branches: ["**"]
   pull_request:
+  # 允许手动重跑（排查 CI 偶发失败时用），无需等新 push
+  workflow_dispatch:
 
 # 红灯必须挡住合并 —— 不用 continue-on-error
 concurrency:
