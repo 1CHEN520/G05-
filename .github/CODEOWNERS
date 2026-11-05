@@ -74,6 +74,7 @@ src/g05/lineage/**  @Jasonlu555
 src/g05/api/routes/lineage.py  @Jasonlu555
 web/js/lineage.js  @Jasonlu555
 tests/test_lineage.py  @Jasonlu555
+tests/test_lineage_validation.py  @Jasonlu555
 docs/adr/ADR-004-lineage-bfs.md  @Jasonlu555
 
 # C1 开发 · 批量导入器
