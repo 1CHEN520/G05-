@@ -46,6 +46,7 @@ roles:
       - docs/00-项目框架与分工方案.md
       - docs/02-架构设计.md
       - docs/03-流程与标准映射.md
+      - docs/review/**
       - guides/**
       - .github/CODEOWNERS
       - .github/pull_request_template.md
@@ -176,9 +177,12 @@ roles:
     owns:
       - tests/conftest.py
       - tests/test_api.py
+      - tests/test_audit_auto.py
       - scripts/fault_inject.py
       - scripts/bench.py
+      - scripts/check_coverage_gate.py
       - .github/workflows/**
+      - reports/**
     mentor: A
     skills: pytest / 故障注入 / 压测 / CI
 

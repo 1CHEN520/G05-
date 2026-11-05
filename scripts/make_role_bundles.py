@@ -42,7 +42,9 @@ EXCLUDE_DIRS = {
     "node_modules",
 }
 EXCLUDE_SUFFIX = {".pyc", ".pyo", ".db", ".db-wal", ".db-shm", ".log"}
-EXCLUDE_NAMES = {".preflight_probe", "g05.db"}
+# 运行时产物：覆盖率报告等由测试/CI 生成，已在 .gitignore 中，
+# 不属于任何人，也不该进任何人的分发包
+EXCLUDE_NAMES = {".preflight_probe", "g05.db", ".coverage", "coverage.xml"}
 
 
 def list_files() -> list[str]:

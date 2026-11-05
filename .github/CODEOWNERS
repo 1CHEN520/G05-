@@ -29,6 +29,7 @@ src/g05/api/deps.py  @1CHEN520
 docs/00-项目框架与分工方案.md  @1CHEN520
 docs/02-架构设计.md  @1CHEN520
 docs/03-流程与标准映射.md  @1CHEN520
+docs/review/**  @1CHEN520
 guides/**  @1CHEN520
 .github/CODEOWNERS  @1CHEN520
 .github/pull_request_template.md  @1CHEN520
@@ -103,9 +104,12 @@ web/js/main.js  @Tang-guo-li
 # C5 开发 · 测试与性能压测
 tests/conftest.py  @HC123-WW
 tests/test_api.py  @HC123-WW
+tests/test_audit_auto.py  @HC123-WW
 scripts/fault_inject.py  @HC123-WW
 scripts/bench.py  @HC123-WW
+scripts/check_coverage_gate.py  @HC123-WW
 .github/workflows/**  @HC123-WW
+reports/**  @HC123-WW
 
 # C6 开发 · 文档与运维
 docs/01-需求规格.md  @jasonwang555
