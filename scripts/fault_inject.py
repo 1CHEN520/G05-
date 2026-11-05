@@ -87,31 +87,24 @@ def case_tamper() -> bool:
     print(f"\n{YELLOW}[2/5] 审计篡改注入{RESET}  目标：append-only 触发器拦截改删")
     ok = True
 
-    # 先种一条审计记录。
-    #
-    # 为什么必须先种：SQLite 的 BEFORE UPDATE/DELETE 触发器是**逐行**触发的，
-    # 空表上执行 UPDATE/DELETE 影响 0 行，触发器根本不会触发 —— 那样测出来的是
-    # "没有行可改"，而不是"改不动"。不种数据就测不出防篡改是否真的生效。
-    #
-    # 用 ORM 的 append 入口写（不直接 INSERT），这样也顺带验证了
-    # "审计只能通过服务层写入" 这条约定。
-    try:
-        from g05.audit.service import AuditService
+    # 先确保审计表里有一条记录。
+    # 触发器是行级 BEFORE 触发器：库里没有行时 UPDATE/DELETE 影响 0 行，
+    # 触发器压根不会执行 —— 那样测出来是"没被拦截"，
+    # 但真相是"没数据可改"，属于假失败。空库环境（CI）尤其容易踩。
+    from g05.audit.service import AuditService
 
-        with session_scope() as db:
+    with session_scope() as db:
+        existing = db.execute(text("SELECT count(*) FROM audit_log")).scalar_one()
+        if not existing:
             AuditService.record(
                 db,
                 table_name="device",
-                action="update",
-                operator="fault_inject",
-                record_id=1,
-                business_key="FAULT_TAMPER_01",
-                reason="故障注入：防篡改用例的前置数据",
+                action="INSERT",
+                operator="fault-injector",
+                business_key="TAMPER-TARGET",
+                new={"device_name": "待篡改的审计记录"},
             )
-    except Exception as exc:  # noqa: BLE001
-        _fail(f"无法准备审计测试数据：{type(exc).__name__}")
-        _info(str(exc).split("\n")[0][:120])
-        return False
+            _info("审计表为空，已写入 1 条目标记录")
 
     for sql, label in (
         ("UPDATE audit_log SET operator='hacker'", "UPDATE"),
@@ -294,6 +287,22 @@ CASES = {
 }
 
 
+def _ensure_schema_ready() -> None:
+    """跑之前确保表结构与触发器就位。
+
+    本地演示时 ``data/db/g05.db`` 早有 seed 数据，表是现成的；
+    但 CI 是干净环境，库是空的 —— 不建表的话每个场景都会撞
+    ``no such table: device``，故障注入就变成了"测环境"而不是"测故障"。
+
+    ``ensure_schema`` 是幂等的（``create_all`` + ``apply_triggers``），
+    已有数据与触发器都不受影响。
+    """
+    from g05.core.schema import ensure_schema
+
+    ensure_schema()
+    _info("表结构与触发器已就位")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="G05 故障注入")
     parser.add_argument("--case", choices=list(CASES), help="只跑单个场景")
@@ -307,6 +316,11 @@ def main() -> None:
     print("=" * 68)
     print(" G05 故障注入演示 —— 每个场景都应「不崩、可恢复、可追溯」")
     print("=" * 68)
+
+    # 先确保表结构与触发器就位。
+    # 本地演示时库里早有 seed 数据，但 CI 是干净环境 —— 不建表的话
+    # 下面每个场景都会报 "no such table: device"，测不出任何东西。
+    _ensure_schema_ready()
 
     selected = [args.case] if args.case else list(CASES)
     results: dict[str, bool] = {}
