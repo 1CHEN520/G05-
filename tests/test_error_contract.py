@@ -160,11 +160,14 @@ def test_bare_http_exception_keeps_its_message(client):
     assert body["code"] == ErrorCode.DEVICE_NOT_FOUND
 
 
-def test_validation_error_is_rewritten_to_400(client):
-    """FastAPI 默认的 422 结构不符合本项目约定，要改写成 400 + G05-1001。"""
+def test_validation_error_is_rewritten_with_error_code(client):
+    """FastAPI 默认的 422 body 结构不符合本项目约定，要改写成带错误码的三字段。
+
+    **状态码保持 422** —— 参考实现与 C5 的 99 条用例都按 422 断言。
+    """
     resp = client.get("/query", params={"page": "abc"})
     body = resp.json()
-    assert resp.status_code == 400
+    assert resp.status_code == 422
     assert body["code"] == ErrorCode.INVALID_PARAM
     assert set(body.keys()) == {"code", "message", "detail"}
     assert body["detail"]["fields"], "应逐字段说明哪里错了"
