@@ -114,7 +114,7 @@ def _check_database() -> dict:
     from g05.core.db import get_engine, session_scope
 
     try:
-        from g05.models import Base
+        from g05.models import Base  # noqa: F401 - 仅用于探测 models 是否已合入
     except ModuleNotFoundError:
         return _check(
             "数据库与触发器",
@@ -124,7 +124,11 @@ def _check_database() -> dict:
         )
 
     engine = get_engine()
-    Base.metadata.create_all(engine)
+    # 建表 **并装触发器**：只 create_all 不装触发器的话，触发器永远缺，
+    # 干净环境下 preflight 必然假红。ensure_schema 幂等，重复跑无副作用。
+    from g05.core.schema import ensure_schema
+
+    ensure_schema()
     with engine.connect() as conn:
         journal = conn.execute(text("PRAGMA journal_mode")).scalar()
         triggers = [
@@ -133,13 +137,39 @@ def _check_database() -> dict:
                 text("SELECT name FROM sqlite_master WHERE type='trigger'")
             ).fetchall()
         ]
+        tables = {
+            r[0]
+            for r in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'")).fetchall()
+        }
     with session_scope() as db:
         db.execute(text("SELECT 1"))
+
     expected = {"trg_audit_no_update", "trg_audit_no_delete"}
+    missing_triggers = sorted(expected - set(triggers))
+
+    # audit_log 表归 C3。M2 阶段 B1 的 models 先合、C3 的 audit_log 后合，
+    # 此时 audit_log 表还不存在，apply_triggers() 按设计跳过它，
+    # 两个审计触发器自然装不上 —— 这是**合并顺序的正常中间态**，
+    # 不是环境装坏了，所以降级为软失败并提示待 C3 合入。
+    # 等 C3 合入后 audit_log 表存在，触发器自动补齐，此检查恢复为 hard。
+    if "audit_log" not in tables:
+        return _check(
+            "数据库与触发器",
+            False,
+            {
+                "reason": "audit_log 表尚未合入（C3 负责），审计触发器待其合入后自动补齐",
+                "journal_mode": journal,
+                "triggers": triggers,
+                "missing_triggers": missing_triggers,
+                "pending_owner": "C3",
+            },
+            soft=True,
+        )
+
     return _check(
         "数据库与触发器",
-        journal == "wal" and expected.issubset(set(triggers)),
-        {"journal_mode": journal, "triggers": triggers},
+        journal == "wal" and not missing_triggers,
+        {"journal_mode": journal, "triggers": triggers, "missing_triggers": missing_triggers},
     )
 
 
