@@ -11,15 +11,19 @@ from __future__ import annotations
 import importlib
 import time
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from g05.core.config import PROJECT_ROOT, settings
 from g05.core.db import get_engine, healthcheck
 from g05.core.logging import get_logger, log_event
+from g05.schemas.errors import ApiError, ErrorCode, describe
 
 try:  # 骨架阶段 models 可能还没合入（B1 负责）
     from g05.models import Base
@@ -32,6 +36,23 @@ log = get_logger("main")
 # 骨架阶段某个模块缺失时只告警、不崩，这样组长推完骨架就能起服务，
 # 各成员的分支陆续合并后路由自然补齐。
 ROUTE_MODULES = ["devices", "points", "lineage", "audit", "imports"]
+
+#: 裸 HTTPException 没带错误码时的兜底映射（按 HTTP 状态码）。
+#:
+#: 只用于过渡期 —— C4 的路由逐步改成抛 ApiError 后，这张表就只服务
+#: 框架自身抛出的异常（如 404 Not Found、405 Method Not Allowed）。
+_DEFAULT_CODE_BY_STATUS: dict[int, str] = {
+    400: ErrorCode.INVALID_PARAM,
+    401: ErrorCode.INVALID_PARAM,
+    403: ErrorCode.INVALID_PARAM,
+    404: ErrorCode.DEVICE_NOT_FOUND,
+    405: ErrorCode.INVALID_PARAM,
+    409: ErrorCode.DUPLICATE_DEVICE,
+    413: ErrorCode.FILE_TOO_LARGE,
+    422: ErrorCode.INVALID_PARAM,
+    500: ErrorCode.INTERNAL_ERROR,
+    503: ErrorCode.SERVICE_UNAVAILABLE,
+}
 
 
 @asynccontextmanager
@@ -105,6 +126,91 @@ async def timing_middleware(request: Request, call_next):
     return response
 
 
+@app.exception_handler(ApiError)
+async def api_error_handler(request: Request, exc: ApiError):
+    """业务错误：带冻结的错误码，客户端可据此做分支判断。"""
+    log.warning(
+        "api error",
+        extra={
+            "extra_fields": {
+                "code": exc.code,
+                "path": request.url.path,
+                "message": exc.message,
+            }
+        },
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"code": exc.code, "message": exc.message, "detail": exc.detail},
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    """参数校验失败：统一成 G05-1001，detail 里保留逐字段说明。
+
+    FastAPI 默认返回 422 且 body 结构是 ``{"detail": [{...}]}``，
+    与本项目冻结的 ``{code, message, detail}`` 约定不一致，所以统一改写。
+    """
+    fields = []
+    for err in exc.errors():
+        loc = ".".join(str(p) for p in err.get("loc", ()) if p != "body")
+        fields.append({"field": loc, "reason": err.get("msg", "参数不合法")})
+    return JSONResponse(
+        status_code=400,
+        content={
+            "code": ErrorCode.INVALID_PARAM,
+            "message": "请求参数不合法",
+            "detail": {"fields": fields},
+        },
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """把裸 HTTPException 也收敛成统一错误体。
+
+    C4 的路由现在还在用 ``raise HTTPException(404, "设备不存在")``，
+    这里做一次兼容：如果 detail 已经是带 ``code`` 的字典就直接透传，
+    否则按 HTTP 状态码映射到最接近的业务错误码。
+    """
+    detail = exc.detail
+    code: str | None = None
+    message: str
+    extra: dict[str, Any] = {}
+
+    if isinstance(detail, dict) and "code" in detail:
+        code = str(detail["code"])
+        message = str(detail.get("message") or describe(code))
+        extra = {k: v for k, v in detail.items() if k not in ("code", "message")}
+    elif isinstance(detail, str):
+        message = detail
+    else:
+        message = str(detail)
+
+    if code is None:
+        code = _DEFAULT_CODE_BY_STATUS.get(
+            exc.status_code,
+            ErrorCode.INTERNAL_ERROR if exc.status_code >= 500 else ErrorCode.INVALID_PARAM,
+        )
+
+    log.warning(
+        "http error",
+        extra={
+            "extra_fields": {
+                "code": code,
+                "status": exc.status_code,
+                "path": request.url.path,
+                "message": message,
+            }
+        },
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"code": code, "message": message, "detail": extra},
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     """兜底异常：记录完整堆栈，对外只返回简要信息（不泄露内部细节）。"""
@@ -114,7 +220,11 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     )
     return JSONResponse(
         status_code=500,
-        content={"ok": False, "message": "服务内部错误，请查看服务端日志", "path": request.url.path},
+        content={
+            "code": ErrorCode.INTERNAL_ERROR,
+            "message": "服务内部错误，请查看服务端日志",
+            "detail": {"path": request.url.path},
+        },
     )
 
 

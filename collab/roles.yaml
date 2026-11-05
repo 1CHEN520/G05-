@@ -42,11 +42,14 @@ roles:
       - src/g05/main.py
       - src/g05/core/**
       - src/g05/schemas/dto.py
+      - src/g05/schemas/errors.py
       - src/g05/api/deps.py
       - docs/00-项目框架与分工方案.md
       - docs/02-架构设计.md
       - docs/03-流程与标准映射.md
       - docs/review/**
+      - docs/需求追溯矩阵.md
+      - docs/答辩材料.md
       - guides/**
       - .github/CODEOWNERS
       - .github/pull_request_template.md
@@ -58,6 +61,8 @@ roles:
       - scripts/split_web_assets.py
       - scripts/make_roster_xlsx.py
       - scripts/apply_roster.py
+      - scripts/demo_acceptance.py
+      - tests/test_error_contract.py
       - docs/团队角色清单.xlsx
       - data/archive/.gitkeep
       - data/db/.gitkeep

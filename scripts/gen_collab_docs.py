@@ -257,23 +257,71 @@ assignees: ""
 """
 
 
+def _planned_files(roles: list[dict]) -> list[str]:
+    """列出「所有分支上出现过的文件」，用于生成分工契约清单。
+
+    分工清单描述的是**角色该负责什么**，而不是"此刻谁的文件在 main 上"。
+    所以这里扫全部分支（而不是只看当前分支），
+    保证在 main 上生成和在 feat/c5-qa 上生成的结果一致。
+
+    只做参考：真正的归属判定仍以 roles.yaml 的模式为准（见 build_index）。
+    """
+    import subprocess
+
+    # 收集所有分支：本地 + 远端
+    out = subprocess.run(
+        ["git", "branch", "-a", "--format=%(refname)"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    refs = [ln.strip() for ln in out.stdout.splitlines() if ln.strip()]
+    # 去掉 HEAD 之类的伪引用
+    refs = [r for r in refs if r and "->" not in r]
+
+    files: set[str] = set()
+    for ref in refs:
+        tree = subprocess.run(
+            ["git", "ls-tree", "-r", "--name-only", ref],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        if tree.returncode == 0:
+            files.update(ln.strip() for ln in tree.stdout.splitlines() if ln.strip())
+
+    # 加上当前工作区里已存在但还没提交的文件
+    try:
+        from make_role_bundles import list_files
+
+        files.update(list_files())
+    except Exception:  # pragma: no cover - 兜底，不让生成脚本因扫描失败而崩
+        pass
+    return sorted(files)
+
+
 def main() -> int:
     roles_doc, issues = load()
 
-    # 把文件清单注入角色（供 render_roster 使用）
-    import subprocess
-
-    out = subprocess.run(
-        ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8"
-    )
-    tracked = set(out.stdout.split()) if out.returncode == 0 else set()
-
     from make_role_bundles import build_index, list_files
 
+    # 分工清单是**契约**：写的是"这个角色该负责哪些文件"，
+    # 不能随当前分支上有没有这些文件而变。
+    #
+    # 所以这里不用 list_files()（它只扫当前工作区），而是把
+    # 「roles.yaml 里的归属模式」对「所有分支上出现过的文件」求交集 ——
+    # 这样不管在哪个分支生成，B2 都还是 6 个文件、C1 还是 5 个。
+    #
+    # 未归属检查仍然用 list_files()，因为那要反映当前工作区的真实状态。
     files = list_files()
     index, unassigned = build_index(roles_doc["roles"], files)
+
+    planned = _planned_files(roles_doc["roles"])
+    planned_index, _ = build_index(roles_doc["roles"], planned)
     for r in roles_doc["roles"]:
-        r["_files"] = index[r["code"]]
+        r["_files"] = planned_index[r["code"]]
 
     # 统一写 LF：Windows 上 write_text 默认写 CRLF，会让 git diff 显示整文件重写，
     # 污染 review。仓库约定 LF（core.autocrlf=false）。
@@ -297,7 +345,6 @@ def main() -> int:
     print("  .github/ISSUE_TEMPLATE/task.md")
     if unassigned:
         print(f"\n警告：{len(unassigned)} 个文件未归属 -> {unassigned}")
-    _ = tracked
     return 0
 
 
