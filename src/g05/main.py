@@ -54,7 +54,6 @@ _DEFAULT_CODE_BY_STATUS: dict[int, str] = {
     503: ErrorCode.SERVICE_UNAVAILABLE,
 }
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 启动：确保表存在（幂等），安装自动审计
@@ -147,17 +146,20 @@ async def api_error_handler(request: Request, exc: ApiError):
 
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(request: Request, exc: RequestValidationError):
-    """参数校验失败：统一成 G05-1001，detail 里保留逐字段说明。
+    """参数校验失败：统一成 422 + G05-1001，detail 里保留逐字段说明。
 
-    FastAPI 默认返回 422 且 body 结构是 ``{"detail": [{...}]}``，
+    FastAPI 默认返回 422 但 body 结构是 ``{"detail": [{...}]}``，
     与本项目冻结的 ``{code, message, detail}`` 约定不一致，所以统一改写。
+
+    **状态码保持 422**（不改 400）：这是 FastAPI 对"语法对但语义不合法"的既定语义，
+    参考实现与 C5 的 99 条用例都按 422 断言，改成 400 会打破既有契约。
     """
     fields = []
     for err in exc.errors():
         loc = ".".join(str(p) for p in err.get("loc", ()) if p != "body")
         fields.append({"field": loc, "reason": err.get("msg", "参数不合法")})
     return JSONResponse(
-        status_code=400,
+        status_code=422,
         content={
             "code": ErrorCode.INVALID_PARAM,
             "message": "请求参数不合法",

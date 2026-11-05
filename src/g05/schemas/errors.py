@@ -93,18 +93,23 @@ class ErrorCode:
 #: 错误码 → 建议 HTTP 状态码。
 #:
 #: 约定：**同一段数字的语义边界要一致**——
-#: 1xxx 统一 400（文件过大这种特例用 413，见下），
+#: 1xxx 统一 4xx（文件过大用 413），
 #: 2xxx 统一按"资源不存在 404 / 状态冲突 409 / 规则不满足 422"细分，
-#: 5xxx 统一 500（依赖不可用用 503）。
+#: 5xxx 统一 500（依赖不可用 503）。
+#:
+#: **1xxx 里为什么有 422**：请求体/查询参数的**框架级校验失败**
+#: （缺字段、类型不对、枚举越界、分页越界）统一走 422 —— 这是 FastAPI 对
+#: "语法对但语义不合法"的既定语义，参考实现与 C5 的 99 条用例一直遵循这个约定。
+#: 路由代码**显式**抛的 400（文件类型不对之类）才用 400。
 HTTP_STATUS: dict[str, int] = {
     # 1xxx 参数
-    ErrorCode.INVALID_PARAM: 400,
-    ErrorCode.MISSING_PARAM: 400,
-    ErrorCode.PAGE_OUT_OF_RANGE: 400,
+    ErrorCode.INVALID_PARAM: 422,
+    ErrorCode.MISSING_PARAM: 422,
+    ErrorCode.PAGE_OUT_OF_RANGE: 422,
     ErrorCode.UNSUPPORTED_FILE_TYPE: 400,
     ErrorCode.FILE_TOO_LARGE: 413,
-    ErrorCode.INVALID_ENUM_VALUE: 400,
-    ErrorCode.INVALID_JSON: 400,
+    ErrorCode.INVALID_ENUM_VALUE: 422,
+    ErrorCode.INVALID_JSON: 422,
     # 2xxx 业务
     ErrorCode.DEVICE_NOT_FOUND: 404,
     ErrorCode.POINT_NOT_FOUND: 404,
