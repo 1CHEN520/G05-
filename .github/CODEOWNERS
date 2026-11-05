@@ -25,11 +25,14 @@ src/g05/cli.py  @1CHEN520
 src/g05/main.py  @1CHEN520
 src/g05/core/**  @1CHEN520
 src/g05/schemas/dto.py  @1CHEN520
+src/g05/schemas/errors.py  @1CHEN520
 src/g05/api/deps.py  @1CHEN520
 docs/00-项目框架与分工方案.md  @1CHEN520
 docs/02-架构设计.md  @1CHEN520
 docs/03-流程与标准映射.md  @1CHEN520
 docs/review/**  @1CHEN520
+docs/需求追溯矩阵.md  @1CHEN520
+docs/答辩材料.md  @1CHEN520
 guides/**  @1CHEN520
 .github/CODEOWNERS  @1CHEN520
 .github/pull_request_template.md  @1CHEN520
@@ -41,6 +44,8 @@ scripts/create_issues.py  @1CHEN520
 scripts/split_web_assets.py  @1CHEN520
 scripts/make_roster_xlsx.py  @1CHEN520
 scripts/apply_roster.py  @1CHEN520
+scripts/demo_acceptance.py  @1CHEN520
+tests/test_error_contract.py  @1CHEN520
 docs/团队角色清单.xlsx  @1CHEN520
 data/archive/.gitkeep  @1CHEN520
 data/db/.gitkeep  @1CHEN520
