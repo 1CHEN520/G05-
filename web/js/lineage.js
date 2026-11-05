@@ -1,166 +1,229 @@
-/* 血缘影响面查询与分层环形图渲染 —— 负责人：B2（血缘引擎） */
-/* ---------------- 血缘 ---------------- */
+/* 血缘影响面查询与分层环形图渲染 —— B2 */
 async function queryImpact() {
   const key = $("#lin-key").value.trim();
   if (!key) { toast("请输入测点编号", "err"); return; }
-  const dir = $("#lin-dir").value;
+  const direction = $("#lin-dir").value;
   try {
-    const r = await api(`/api/lineage/impact?node_type=point&node_key=${encodeURIComponent(key)}&direction=${dir}`);
-    showImpactResult(r);
-    drawGraph({ nodes: r.nodes, edges: [] }, r.root);
-  } catch (e) { toast("查询失败：" + e.message, "err"); }
+    const result = await api(
+      `/api/lineage/impact?node_type=point&node_key=${encodeURIComponent(key)}&direction=${direction}`,
+    );
+    showImpactResult(result, direction);
+    const nodes = result.root ? [result.root, ...(result.nodes || [])] : (result.nodes || []);
+    drawGraph({ nodes, edges: edgesFromPaths(result.root, result.nodes || [], direction) }, result.root);
+  } catch (error) {
+    toast("查询失败：" + error.message, "err");
+  }
 }
-function showImpactResult(r) {
-  const sum = r.summary || {};
+
+/* 裁定 3：/impact 响应不再带 edges，改由每条 path 还原 BFS 树，
+   并按方向还原成数据流方向 upstream → downstream，箭头语义与 /graph 一致。 */
+function edgesFromPaths(root, nodes, direction) {
+  const idByKey = new Map();
+  if (root) idByKey.set(root.node_key, root.id);
+  nodes.forEach((node) => idByKey.set(node.node_key, node.id));
+  const seen = new Set();
+  const edges = [];
+  nodes.forEach((node) => {
+    const path = node.path || [];
+    for (let index = 1; index < path.length; index += 1) {
+      const from = idByKey.get(path[index - 1]);
+      const to = idByKey.get(path[index]);
+      if (from === undefined || to === undefined) continue;
+      const [source, target] = direction === "upstream" ? [to, from] : [from, to];
+      const signature = `${source}-${target}`;
+      if (seen.has(signature)) continue;
+      seen.add(signature);
+      edges.push({ source, target });
+    }
+  });
+  return edges;
+}
+
+const TRUNCATED_BY_LABELS = { max_depth: "深度上限", max_nodes: "节点上限" };
+
+function showImpactResult(result, direction = "downstream") {
+  const summary = result.summary || {};
+  const nodes = result.nodes || [];
+  const total = Number.isFinite(result.total) ? result.total : nodes.length;
+  const returned = Number.isFinite(result.returned) ? result.returned : nodes.length;
+  const truncatedBy = (result.truncated_by || [])
+    .map((reason) => TRUNCATED_BY_LABELS[reason] || reason);
+  const omitted = Object.entries(result.omitted_by_type || {});
   $("#lin-summary").innerHTML = `
-    <span class="pill blue">根节点 ${esc(r.root?.node_key || "-")}</span>
-    <span class="pill ${r.total > 0 ? "warn" : "ok"}">影响 ${r.total} 个对象</span>
-    ${Object.entries(sum).map(([k, v]) => `<span class="pill">${k}: ${v}</span>`).join("")}
-    ${r.truncated ? '<span class="pill err">结果已截断</span>' : ""}
-    ${r.cycles?.length ? '<span class="pill err">检测到循环依赖</span>' : ""}`;
-  const nodes = r.nodes || [];
+    <span class="pill blue">根节点 ${esc(result.root?.node_key || "-")}</span>
+    <span class="pill ${total > 0 ? "warn" : "ok"}">影响 ${total} 个对象</span>
+    ${Object.entries(summary).map(([key, value]) => `<span class="pill">${key}: ${value}</span>`).join("")}
+    ${result.truncated ? `<span class="pill err">已截断${truncatedBy.length ? "：" + esc(truncatedBy.join("/")) : ""}｜已返回 ${returned}</span>` : ""}
+    ${omitted.map(([key, value]) => `<span class="pill err">未返回 ${esc(key)}: ${value}</span>`).join("")}
+    ${result.cycles?.length ? '<span class="pill err">检测到循环依赖</span>' : ""}`;
   if (!nodes.length) {
-    $("#lin-body").innerHTML = '<tr><td colspan="6" class="empty">该测点没有下游依赖（安全改名）</td></tr>';
+    const emptyMessage = total > 0
+      ? `本次未返回节点（已截断，共 ${total} 个受影响对象）`
+      : direction === "upstream"
+        ? "该测点没有上游依赖"
+        : "该测点没有下游依赖（安全改名）";
+    $("#lin-body").innerHTML = `<tr><td colspan="6" class="empty">${emptyMessage}</td></tr>`;
     return;
   }
-  $("#lin-body").innerHTML = nodes.map((n) => `
+  $("#lin-body").innerHTML = nodes.map((node) => `
     <tr>
-      <td class="mono">L${n.depth}</td>
-      <td><span class="pill ${n.node_type === "point" ? "blue" : n.node_type === "report" ? "warn" : "ok"}">${esc(n.node_type)}</span></td>
-      <td class="mono">${esc(n.node_key)}</td>
-      <td>${esc(n.node_name)}</td>
-      <td>${esc(n.owner || "-")}</td>
-      <td class="mono muted" style="font-size:11px">${esc((n.path || []).join(" → "))}</td>
+      <td class="mono">L${node.depth}</td>
+      <td><span class="pill ${node.node_type === "point" ? "blue" : node.node_type === "report" ? "warn" : "ok"}">${esc(node.node_type)}</span></td>
+      <td class="mono">${esc(node.node_key)}</td>
+      <td>${esc(node.node_name)}</td>
+      <td>${esc(node.owner || "-")}</td>
+      <td class="mono muted" style="font-size:11px">${esc((node.path || []).join(" → "))}</td>
     </tr>`).join("");
 }
+
 async function loadGraph() {
   try {
-    const g = await api("/api/lineage/graph?limit=300");
-    if (!g.nodes.length) { toast("血缘图为空，请先注册节点与边", "err"); return; }
-    drawGraph(g, null);
+    const graph = await api("/api/lineage/graph?limit=300");
+    if (!graph.nodes.length) { toast("血缘图为空，请先注册节点与边", "err"); return; }
+    drawGraph(graph, null);
     const counts = {};
-    g.nodes.forEach((n) => { counts[n.type] = (counts[n.type] || 0) + 1; });
+    graph.nodes.forEach((node) => { counts[node.type] = (counts[node.type] || 0) + 1; });
+    const total = Number.isFinite(graph.total) ? graph.total : graph.nodes.length;
+    const returned = Number.isFinite(graph.returned) ? graph.returned : graph.nodes.length;
     $("#lin-summary").innerHTML = `
-      <span class="pill blue">全图 ${g.nodes.length} 节点 / ${g.edges.length} 条边</span>
-      ${Object.entries(counts).map(([k, v]) => `<span class="pill">${k}: ${v}</span>`).join("")}`;
+      <span class="pill blue">全图 ${returned}/${total} 节点 / ${(graph.edges || []).length} 条边</span>
+      ${Object.entries(counts).map(([key, value]) => `<span class="pill">${key}: ${value}</span>`).join("")}
+      ${graph.truncated ? `<span class="pill err">已截断：仅显示前 ${returned} 个节点</span>` : ""}`;
     $("#lin-body").innerHTML =
       '<tr><td colspan="6" class="empty">全图模式只展示结构；输入测点编号可查看该测点的影响清单</td></tr>';
-  } catch (e) { toast("加载失败：" + e.message, "err"); }
+  } catch (error) {
+    toast("加载失败：" + error.message, "err");
+  }
 }
 
-/* 分层环形布局：内圈 消费端(report/task/api) → 中圈 dataset → 外圈 point
-   相比力导向，层级结构一目了然，且节点多时不糊成一团 */
+function normalizeLineageNode(node) {
+  return {
+    ...node,
+    type: node.type || node.node_type,
+    key: node.key || node.node_key,
+    name: node.name || node.node_name,
+  };
+}
+
+/* 分层环形布局：内圈消费端 → 中圈数据集 → 外圈测点。 */
 function drawGraph(graph, root) {
   const box = $("#graph");
-  const W = box.clientWidth || 900, H = box.clientHeight || 520;
-  const colors = { point: "#2563eb", dataset: "#0f9d58", report: "#d97706", task: "#7c3aed", api: "#dc2626" };
-  const typeLabel = { point: "测点", dataset: "数据集", report: "报表", task: "任务", api: "接口" };
-
-  // 分层：0=最内圈
+  const width = box.clientWidth || 900;
+  const height = box.clientHeight || 520;
+  const colors = {
+    point: "#2563eb",
+    dataset: "#0f9d58",
+    report: "#d97706",
+    task: "#7c3aed",
+    api: "#dc2626",
+  };
+  const typeLabels = { point: "测点", dataset: "数据集", report: "报表", task: "任务", api: "接口" };
   const ringOf = { report: 0, task: 0, api: 0, dataset: 1, point: 2 };
   const groups = { 0: [], 1: [], 2: [] };
-  graph.nodes.forEach((n) => groups[ringOf[n.type] ?? 2].push(n));
+  (graph.nodes || []).map(normalizeLineageNode).forEach((node) => {
+    groups[ringOf[node.type] ?? 2].push(node);
+  });
 
-  const cx = W / 2, cy = H / 2;
-  const rings = [
-    Math.min(W, H) * 0.22,
-    Math.min(W, H) * 0.34,
-    Math.min(W, H) * 0.46,
-  ];
-
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const minSide = Math.min(width, height);
+  const rings = [minSide * 0.22, minSide * 0.34, minSide * 0.46];
   const nodes = [];
-  Object.keys(groups).forEach((r) => {
-    const list = groups[r];
-    const radius = rings[r];
-    list.forEach((n, i) => {
-      // 每圈起始角错开，避免同一条半径上堆叠
-      const offset = r === 2 ? Math.PI / 3 : r === 1 ? Math.PI / 6 : 0;
-      const angle = (i / Math.max(list.length, 1)) * Math.PI * 2 + offset;
-      // 测点多时轻微抖动，减少完全重叠
-      const jitter = r === 2 && list.length > 60 ? (i % 3) * 7 : 0;
+  Object.keys(groups).forEach((ring) => {
+    const list = groups[ring];
+    const radius = rings[ring];
+    list.forEach((node, index) => {
+      const offset = ring === "2" ? Math.PI / 3 : ring === "1" ? Math.PI / 6 : 0;
+      const angle = (index / Math.max(list.length, 1)) * Math.PI * 2 + offset;
+      const jitter = ring === "2" && list.length > 60 ? (index % 3) * 7 : 0;
       nodes.push({
-        ...n,
-        x: cx + Math.cos(angle) * (radius - jitter),
-        y: cy + Math.sin(angle) * (radius - jitter),
+        ...node,
+        x: centerX + Math.cos(angle) * (radius - jitter),
+        y: centerY + Math.sin(angle) * (radius - jitter),
       });
     });
   });
 
-  const byId = new Map(nodes.map((n) => [n.id, n]));
-  const edges = (graph.edges || []).filter((e) => byId.has(e.source) && byId.has(e.target));
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const edges = (graph.edges || []).filter(
+    (edge) => byId.has(edge.source) && byId.has(edge.target),
+  );
   const showAllLabels = nodes.length <= 45;
-
-  const svgNS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(svgNS, "svg");
-  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  const svgNamespace = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.setAttribute("width", width);
+  svg.setAttribute("height", height);
   svg.style.display = "block";
 
-  const defs = document.createElementNS(svgNS, "defs");
-  defs.innerHTML = `<marker id="arrow" viewBox="0 0 10 10" refX="24" refY="5"
+  const definitions = document.createElementNS(svgNamespace, "defs");
+  definitions.innerHTML = `<marker id="lineage-arrow" viewBox="0 0 10 10" refX="24" refY="5"
       markerWidth="5" markerHeight="5" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#c8d0da"/></marker>`;
-  svg.appendChild(defs);
+  svg.appendChild(definitions);
 
-  // 边：先画，压在节点下方
-  edges.forEach((e) => {
-    const a = byId.get(e.source), b = byId.get(e.target);
-    const line = document.createElementNS(svgNS, "line");
-    line.setAttribute("x1", a.x); line.setAttribute("y1", a.y);
-    line.setAttribute("x2", b.x); line.setAttribute("y2", b.y);
+  edges.forEach((edge) => {
+    const source = byId.get(edge.source);
+    const target = byId.get(edge.target);
+    const line = document.createElementNS(svgNamespace, "line");
+    line.setAttribute("x1", source.x);
+    line.setAttribute("y1", source.y);
+    line.setAttribute("x2", target.x);
+    line.setAttribute("y2", target.y);
     line.setAttribute("stroke", "#e2e8f0");
     line.setAttribute("stroke-width", "0.9");
-    line.setAttribute("marker-end", "url(#arrow)");
+    line.setAttribute("marker-end", "url(#lineage-arrow)");
     svg.appendChild(line);
   });
 
-  // 同心圆参考线
-  rings.forEach((r, i) => {
-    const c = document.createElementNS(svgNS, "circle");
-    c.setAttribute("cx", cx); c.setAttribute("cy", cy); c.setAttribute("r", r);
-    c.setAttribute("fill", "none");
-    c.setAttribute("stroke", "#f0f2f5");
-    c.setAttribute("stroke-dasharray", "3 4");
-    svg.appendChild(c);
+  rings.forEach((radius) => {
+    const circle = document.createElementNS(svgNamespace, "circle");
+    circle.setAttribute("cx", centerX);
+    circle.setAttribute("cy", centerY);
+    circle.setAttribute("r", radius);
+    circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", "#f0f2f5");
+    circle.setAttribute("stroke-dasharray", "3 4");
+    svg.appendChild(circle);
   });
 
-  nodes.forEach((n) => {
-    const g = document.createElementNS(svgNS, "g");
-    const isRoot = root && n.node_key === root.node_key;
-    const isHub = n.type !== "point";
-    const circle = document.createElementNS(svgNS, "circle");
-    circle.setAttribute("cx", n.x); circle.setAttribute("cy", n.y);
+  nodes.forEach((node) => {
+    const group = document.createElementNS(svgNamespace, "g");
+    const isRoot = Boolean(root && node.id === root.id);
+    const isHub = node.type !== "point";
+    const circle = document.createElementNS(svgNamespace, "circle");
+    circle.setAttribute("cx", node.x);
+    circle.setAttribute("cy", node.y);
     circle.setAttribute("r", isRoot ? 10 : isHub ? 6.5 : 3.6);
-    circle.setAttribute("fill", colors[n.type] || "#94a3b8");
+    circle.setAttribute("fill", colors[node.type] || "#94a3b8");
     circle.setAttribute("stroke", isRoot ? "#1a1d21" : "#fff");
     circle.setAttribute("stroke-width", isRoot ? 2.5 : isHub ? 1.4 : 0.8);
-    g.appendChild(circle);
+    group.appendChild(circle);
 
-    // 标签策略：节点少 → 全显示；节点多 → 只显示非测点（关键节点）
     if (showAllLabels || isHub || isRoot) {
-      // 沿径向向外偏移，避免同圈标签互相压住
-      const rdx = n.x - cx, rdy = n.y - cy;
-      const rdist = Math.hypot(rdx, rdy) || 1;
-      const pad = isHub ? 15 : 12;
-      const lx = n.x + (rdx / rdist) * pad;
-      const ly = n.y + (rdy / rdist) * pad;
-
-      const label = document.createElementNS(svgNS, "text");
-      const anchor = rdx > 12 ? "start" : rdx < -12 ? "end" : "middle";
-      label.setAttribute("x", lx);
-      label.setAttribute("y", ly + 3.5);
+      const radialX = node.x - centerX;
+      const radialY = node.y - centerY;
+      const radialDistance = Math.hypot(radialX, radialY) || 1;
+      const padding = isHub ? 15 : 12;
+      const labelX = node.x + (radialX / radialDistance) * padding;
+      const labelY = node.y + (radialY / radialDistance) * padding;
+      const label = document.createElementNS(svgNamespace, "text");
+      const anchor = radialX > 12 ? "start" : radialX < -12 ? "end" : "middle";
+      label.setAttribute("x", labelX);
+      label.setAttribute("y", labelY + 3.5);
       label.setAttribute("text-anchor", anchor);
       label.setAttribute("font-size", isHub ? "11" : "10");
       label.setAttribute("fill", isHub ? "#3d4650" : "#5b6470");
       label.setAttribute("font-weight", isHub ? "500" : "400");
-      label.textContent = n.name || n.key;
-      g.appendChild(label);
+      label.textContent = node.name || node.key;
+      group.appendChild(label);
     }
 
-    const tip = document.createElementNS(svgNS, "title");
-    tip.textContent = `${typeLabel[n.type] || n.type} · ${n.key}\n${n.name}${n.owner ? "\n负责人：" + n.owner : ""}`;
-    g.appendChild(tip);
-
-    svg.appendChild(g);
+    const tooltip = document.createElementNS(svgNamespace, "title");
+    tooltip.textContent = `${typeLabels[node.type] || node.type} · ${node.key}\n${node.name}${
+      node.owner ? "\n负责人：" + node.owner : ""
+    }`;
+    group.appendChild(tooltip);
+    svg.appendChild(group);
   });
 
   box.innerHTML = "";
