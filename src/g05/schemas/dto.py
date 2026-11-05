@@ -107,13 +107,61 @@ class LineageNodeOut(BaseModel):
 
 
 class ImpactOut(BaseModel):
+    """影响面查询响应。
+
+    截断语义按 A 的裁定（2026-11-01，决定 1 方案 2）：
+    ``total`` 是**完整可达节点数**（不含 root，截断与否都如实计数），
+    ``returned`` 是本次实际返回的节点数；两者之差按类型记入
+    ``omitted_by_type``，被谁截断记入 ``truncated_by``。
+
+    按决定 3，``/impact`` **不含 edges** —— 边由 ``/graph`` 单独提供，
+    双份传输只会给前端添乱。
+    """
+
     root: LineageNodeOut | None
     direction: str
     total: int
+    returned: int
     truncated: bool
+    truncated_by: list[str] = Field(default_factory=list)
+    omitted_by_type: dict[str, int] = Field(default_factory=dict)
     cycles: list[list[str]] = Field(default_factory=list)
     summary: dict[str, int] = Field(default_factory=dict)
     nodes: list[LineageNodeOut] = Field(default_factory=list)
+
+
+class GraphNodeOut(BaseModel):
+    """血缘图节点（比 ``LineageNodeOut`` 少 depth/path，多用 type/key/name 简写）。"""
+
+    id: int
+    type: str
+    key: str
+    name: str
+    owner: str | None = None
+
+
+class GraphEdgeOut(BaseModel):
+    """血缘图边。``source``/``target`` 为节点 id。"""
+
+    source: int
+    target: int
+    field: str | None = None
+    relation: str | None = None
+
+
+class GraphOut(BaseModel):
+    """血缘全图响应。
+
+    按 A 的裁定（决定 2 方案 1）：保留 induced-graph 语义（边两端都在返回节点集内），
+    加 ``total``/``returned``/``truncated`` 三个字段，让前端不再把前 N 个节点
+    说成"全图"。**不引入 cursor 分页**；超过 1000 节点再启用，见 ADR-004"未来工作"。
+    """
+
+    nodes: list[GraphNodeOut] = Field(default_factory=list)
+    edges: list[GraphEdgeOut] = Field(default_factory=list)
+    total: int
+    returned: int
+    truncated: bool
 
 
 # ---------------- Audit ----------------
