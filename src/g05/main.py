@@ -16,6 +16,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -102,6 +103,113 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------- OpenAPI：给每个端点补上统一错误体说明 ----------------
+# issue G05-02 验收标准：「/docs（Swagger）里每个端点都有入参、出参、错误码说明」。
+#
+# FastAPI 默认只生成 200/422 两个响应，且 422 的 body 结构是框架默认的
+# ``{"detail": [...]}`` —— 与本项目冻结的 ``{code, message, detail}`` 不一致。
+# 所以这里接管 openapi()，给所有端点补上标准错误响应。
+def _custom_openapi() -> dict[str, Any]:
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+
+    error_schema = {
+        "type": "object",
+        "required": ["code", "message", "detail"],
+        "properties": {
+            "code": {
+                "type": "string",
+                "description": "业务错误码。1xxx 参数 / 2xxx 业务 / 5xxx 系统",
+                "example": "G05-2003",
+            },
+            "message": {"type": "string", "description": "人类可读的一句话说明"},
+            "detail": {
+                "type": "object",
+                "description": "结构化补充信息",
+                "additionalProperties": True,
+            },
+        },
+    }
+    components = schema.setdefault("components", {}).setdefault("schemas", {})
+    components["ErrorOut"] = error_schema
+    ref = {"$ref": "#/components/schemas/ErrorOut"}
+
+    # 端点与它可能抛的错误码（按业务域归类，便于前端按域处理）
+    errors_by_prefix: list[tuple[str, list[tuple[int, str]]]] = [
+        (
+            "/api/devices",
+            [
+                (404, "G05-2001 设备不存在"),
+                (409, "G05-2003 设备编号已存在 / G05-2005 设备下仍有活跃测点"),
+            ],
+        ),
+        (
+            "/api/points",
+            [
+                (404, "G05-2002 测点不存在 / G05-2006 测点引用的设备不存在"),
+                (409, "G05-2004 测点编号已存在 / G05-2013 改名冲突"),
+            ],
+        ),
+        (
+            "/api/lineage",
+            [
+                (404, "G05-2007 血缘节点不存在"),
+                (422, "G05-2008 血缘自环被拒 / G05-2009 血缘形成环"),
+            ],
+        ),
+        (
+            "/api/audit",
+            [(409, "G05-2012 审计记录不可修改")],
+        ),
+        (
+            "/api/import",
+            [
+                (400, "G05-1004 不支持的文件类型"),
+                (413, "G05-1005 文件超出大小上限"),
+                (422, "G05-2010 导入数据校验未通过 / G05-2011 导入整批已回滚"),
+            ],
+        ),
+    ]
+
+    for path, ops in schema.get("paths", {}).items():
+        matched = [pair for prefix, pairs in errors_by_prefix if path.startswith(prefix) for pair in pairs]
+        # 没匹配到业务域的端点也给通用说明 —— 验收标准要求"每个端点"
+        common = [(422, "G05-1001 参数格式或取值不合法")]
+        for method, op in ops.items():
+            if method not in ("get", "post", "put", "patch", "delete"):
+                continue
+            responses = op.setdefault("responses", {})
+            for status, desc in common:
+                responses[str(status)] = {
+                    "description": desc,
+                    "content": {"application/json": {"schema": ref}},
+                }
+            for status, desc in matched:
+                responses.setdefault(
+                    str(status),
+                    {"description": desc, "content": {"application/json": {"schema": ref}}},
+                )
+            # 统一错误体模型：所有非 2xx 都是 ErrorOut
+            for status, resp in responses.items():
+                if status.startswith("2"):
+                    continue
+                content = resp.setdefault("content", {})
+                content.setdefault("application/json", {})["schema"] = ref
+
+    app.openapi_schema = schema
+    return schema
+
+
+app.openapi = _custom_openapi  # type: ignore[method-assign]
 
 
 @app.middleware("http")
