@@ -1,0 +1,81 @@
+# ============================================================
+# 导入校验规则（YAML 配置驱动 —— 工业级与 demo 的分水岭）
+# 改动本文件即可调整校验策略，无需改代码
+# ============================================================
+
+# ---------------- 通用设置 ----------------
+settings:
+  # 表头必须完全匹配（True 时缺列/多列直接判失败）
+  strict_header: true
+  # 空值容忍：某列空值比例超过阈值则整表不通过
+  max_null_ratio: 0.3
+  # 是否去除首尾空格
+  strip_whitespace: true
+
+# ---------------- 各表校验规则 ----------------
+# 规则类型：required | type | range | regex | unique | enum | length
+sheets:
+
+  device:
+    sheet_name: "设备"
+    columns:
+      device_code:
+        required: true
+        type: str
+        unique: true
+        length: [2, 32]
+        regex: "^[A-Z]{2,4}-\\d{3,6}$"     # 例：FAN-0012
+      device_name:
+        required: true
+        type: str
+        length: [1, 64]
+      device_type:
+        required: true
+        type: str
+        enum: ["风机", "水泵", "压缩机", "电机", "减速机", "换热器", "锅炉", "空压机", "输送机", "变压器", "变频器", "冷却塔"]
+      location:
+        required: true
+        type: str
+        length: [1, 128]
+      status:
+        required: false
+        type: str
+        enum: ["运行", "停机", "检修", "报废"]
+        default: "运行"
+
+  measure_point:
+    sheet_name: "测点"
+    columns:
+      device_code:
+        required: true
+        type: str
+        # 外键引用：必须存在于 device 表
+        foreign_key: "device.device_code"
+      point_code:
+        required: true
+        type: str
+        unique: true
+        length: [2, 48]
+        regex: "^[A-Z0-9_]{2,48}$"
+      point_name:
+        required: true
+        type: str
+        length: [1, 64]
+      point_type:
+        required: true
+        type: str
+        enum: ["温度", "压力", "振动", "转速", "电流", "电压", "流量", "液位", "位移", "噪声", "湿度", "功率"]
+      unit:
+        required: true
+        type: str
+        length: [1, 16]
+
+# ---------------- 质量评分权重 ----------------
+scoring:
+  # 三项加权，合计 100
+  weights:
+    completeness: 40      # 完整性：必填列非空比例
+    compliance: 35        # 合规性：通过格式/类型/枚举校验的比例
+    uniqueness: 25        # 唯一性：无重复键的比例
+  # 放行分数线
+  pass_threshold: 85

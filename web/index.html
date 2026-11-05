@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>G05 设备台账与测点资产目录</title>
+<link rel="stylesheet" href="static/css/app.css" />
+</head>
+<body>
+<header>
+  <h1>G05 设备台账与测点资产目录</h1>
+  <span class="badge">工业级 L2</span>
+  <div class="health"><span class="dot" id="hdot"></span><span id="htext">检测中…</span></div>
+</header>
+
+<nav>
+  <button class="active" data-tab="overview">总览</button>
+  <button data-tab="devices">设备台账</button>
+  <button data-tab="points">测点目录</button>
+  <button data-tab="lineage">血缘影响面</button>
+  <button data-tab="audit">变更审计</button>
+  <button data-tab="import">批量导入</button>
+</nav>
+
+<main>
+  <!-- ============ 总览 ============ -->
+  <section id="overview" class="active">
+    <div class="card">
+      <h2>运行指标 <small>实时查询数据库</small></h2>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="v" id="k-devices">-</div><div class="l">设备总数</div></div>
+        <div class="kpi"><div class="v" id="k-points">-</div><div class="l">测点总数</div></div>
+        <div class="kpi"><div class="v" id="k-audit">-</div><div class="l">审计条目</div></div>
+        <div class="kpi"><div class="v" id="k-db">-</div><div class="l">数据库模式</div></div>
+      </div>
+    </div>
+    <div class="split">
+      <div class="card">
+        <h2>开题四问自检</h2>
+        <table>
+          <tr><th style="width:38%">问题</th><th>本系统答案</th></tr>
+          <tr><td>断电重启会怎样？</td><td>SQLite <b>WAL</b> 模式 + 事务原子写入，重启无缺口</td></tr>
+          <tr><td>并发上来扛得住吗？</td><td>连接池 + bulk 分片导入，万行 &lt;30s</td></tr>
+          <tr><td>出问题能查到人/根因吗？</td><td><b>append-only 审计</b>（数据库触发器禁止改删）+ 血缘影响面</td></tr>
+          <tr><td>换台机器跑得起来吗？</td><td>配置外置 YAML + 一键启动 + 依赖锁定</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h2>健康检查 <small>GET /healthz</small></h2>
+        <pre id="health-pre">加载中…</pre>
+        <div class="row" style="margin-top:12px">
+          <button class="btn ghost" onclick="loadOverview()">刷新</button>
+          <a class="btn ghost" href="/docs" target="_blank" style="text-decoration:none;display:inline-block">API 文档</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 设备 ============ -->
+  <section id="devices">
+    <div class="card">
+      <h2>设备台账</h2>
+      <div class="row">
+        <input id="dev-kw" placeholder="编号 / 名称搜索" style="width:200px" />
+        <select id="dev-type">
+          <option value="">全部类型</option>
+          <option>风机</option><option>水泵</option><option>压缩机</option><option>电机</option>
+          <option>减速机</option><option>换热器</option><option>锅炉</option><option>空压机</option>
+          <option>输送机</option><option>变压器</option><option>变频器</option><option>冷却塔</option>
+        </select>
+        <button class="btn" onclick="loadDevices(1)">查询</button>
+        <span class="muted" id="dev-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>编号</th><th>名称</th><th>类型</th><th>位置</th><th>状态</th><th>版本</th><th>操作</th>
+          </tr></thead>
+          <tbody id="dev-body"><tr><td colspan="8" class="empty">暂无数据</td></tr></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
+        <button class="btn ghost" onclick="loadDevices(devPage-1)" id="dev-prev">上一页</button>
+        <span class="muted" id="dev-page-label">-</span>
+        <button class="btn ghost" onclick="loadDevices(devPage+1)" id="dev-next">下一页</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 测点 ============ -->
+  <section id="points">
+    <div class="card">
+      <h2>测点资产目录 <small>改名不删除，版本可回溯</small></h2>
+      <div class="row">
+        <input id="pt-kw" placeholder="测点编号 / 名称搜索" style="width:200px" />
+        <select id="pt-type">
+          <option value="">全部类型</option>
+          <option>温度</option><option>压力</option><option>振动</option><option>转速</option>
+          <option>电流</option><option>电压</option><option>流量</option><option>液位</option>
+          <option>位移</option><option>噪声</option><option>湿度</option><option>功率</option>
+        </select>
+        <button class="btn" onclick="loadPoints(1)">查询</button>
+        <span class="muted" id="pt-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>测点编号</th><th>名称</th><th>类型</th><th>单位</th>
+            <th>所属设备</th><th>版本</th><th>操作</th>
+          </tr></thead>
+          <tbody id="pt-body"><tr><td colspan="8" class="empty">暂无数据</td></tr></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
+        <button class="btn ghost" onclick="loadPoints(ptPage-1)" id="pt-prev">上一页</button>
+        <span class="muted" id="pt-page-label">-</span>
+        <button class="btn ghost" onclick="loadPoints(ptPage+1)" id="pt-next">下一页</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 血缘 ============ -->
+  <section id="lineage">
+    <div class="card">
+      <h2>血缘影响面 <small>改这个测点，谁会受影响</small></h2>
+      <div class="row">
+        <input id="lin-key" placeholder="测点编号，如 FAN0012_TEMP" style="width:240px" />
+        <select id="lin-dir">
+          <option value="downstream">下游（我影响谁）</option>
+          <option value="upstream">上游（谁影响我）</option>
+        </select>
+        <button class="btn" onclick="queryImpact()">查询影响面</button>
+        <button class="btn ghost" onclick="loadGraph()">加载全图</button>
+      </div>
+      <div class="row" id="lin-summary"></div>
+      <div class="graph" id="graph">
+        <div class="empty">输入测点编号查询，或点「加载全图」查看血缘网络</div>
+      </div>
+      <div class="legend">
+        <span><i style="background:#2563eb"></i>测点 point（外圈）</span>
+        <span><i style="background:#0f9d58"></i>数据集 dataset（中圈）</span>
+        <span><i style="background:#d97706"></i>报表 report（内圈）</span>
+        <span><i style="background:#7c3aed"></i>任务 task（内圈）</span>
+        <span><i style="background:#dc2626"></i>接口 api（内圈）</span>
+        <span class="muted">· 鼠标悬停看详情 · 箭头方向 = 数据流向</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>受影响清单</h2>
+      <div class="table-wrap" style="max-height:340px">
+        <table>
+          <thead><tr><th>深度</th><th>类型</th><th>编号</th><th>名称</th><th>负责人</th><th>依赖路径</th></tr></thead>
+          <tbody id="lin-body"><tr><td colspan="6" class="empty">暂无结果</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 审计 ============ -->
+  <section id="audit">
+    <div class="card">
+      <h2>变更审计 <small>append-only · 数据库触发器禁止改删</small></h2>
+      <div class="row">
+        <select id="au-table">
+          <option value="">全部表</option>
+          <option value="device">device</option>
+          <option value="measure_point">measure_point</option>
+          <option value="record">record</option>
+          <option value="alarm">alarm</option>
+          <option value="import">import</option>
+        </select>
+        <input id="au-op" placeholder="操作人" style="width:130px" />
+        <button class="btn" onclick="loadAudit()">查询</button>
+        <button class="btn ghost" onclick="verifyImmutable()">验证不可篡改</button>
+        <a class="btn ghost" href="/api/audit/export" target="_blank" style="text-decoration:none;display:inline-block">导出 CSV</a>
+      </div>
+      <div id="immutable-box"></div>
+      <div class="table-wrap" style="max-height:460px">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>时间</th><th>表</th><th>业务键</th><th>动作</th><th>操作人</th><th>原因</th><th>变更</th>
+          </tr></thead>
+          <tbody id="au-body"><tr><td colspan="8" class="empty">暂无审计记录</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 导入 ============ -->
+  <section id="import">
+    <div class="card">
+      <h2>Excel 批量导入 <small>校验不通过整批回滚</small></h2>
+      <div class="row">
+        <input type="file" id="file-input" accept=".xlsx,.xlsm" />
+        <button class="btn" onclick="doImport()" id="import-btn">开始导入</button>
+        <a class="btn ghost" href="/api/import/template" target="_blank" style="text-decoration:none;display:inline-block">模板说明</a>
+      </div>
+      <div id="import-result"></div>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script src="static/js/api.js"></script>
+<script src="static/js/pages.js"></script>
+<script src="static/js/lineage.js"></script>
+<script src="static/js/main.js"></script>
+</body>
+</html>
