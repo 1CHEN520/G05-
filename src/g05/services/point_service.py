@@ -10,13 +10,12 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from g05.audit.service import AuditService
 from g05.core.logging import get_logger, log_event
 from g05.lineage.impact import impact_of
-from g05.models.device import Device
 from g05.models.measure_point import MeasurePoint
 
 log = get_logger("services.point")
@@ -45,6 +44,7 @@ def rename_point(
     operator: str = "system",
     reason: str | None = None,
     include_impact: bool = True,
+    trace_id: str | None = None,
 ) -> dict:
     """重命名测点，返回影响面。
 
@@ -87,6 +87,7 @@ def rename_point(
         old=old_snapshot,
         new={"point_name": new_name, "version": point.version},
         reason=reason or "测点改名",
+        trace_id=trace_id,
     )
 
     session.commit()
@@ -112,7 +113,12 @@ def rename_point(
 
 
 def soft_delete_point(
-    session: Session, point_id: int, *, operator: str = "system", reason: str | None = None
+    session: Session,
+    point_id: int,
+    *,
+    operator: str = "system",
+    reason: str | None = None,
+    trace_id: str | None = None,
 ) -> MeasurePoint:
     """软删测点：不物理删除，保留审计痕迹。"""
     point = get_point(session, point_id)
@@ -134,6 +140,7 @@ def soft_delete_point(
         old={"is_deleted": old["is_deleted"], "version": old["version"]},
         new={"is_deleted": True, "version": point.version},
         reason=reason or "软删除测点",
+        trace_id=trace_id,
     )
     session.commit()
     log_event(log, "point.soft_deleted", point_id=point.id, operator=operator)
@@ -150,8 +157,6 @@ def list_points(
     page: int = 1,
     size: int = 20,
 ) -> tuple[list[MeasurePoint], int]:
-    from sqlalchemy import func
-
     stmt = select(MeasurePoint)
     count_stmt = select(func.count()).select_from(MeasurePoint)
 
@@ -174,39 +179,4 @@ def list_points(
 
     total = session.execute(count_stmt).scalar_one()
     stmt = stmt.order_by(MeasurePoint.id).limit(size).offset((page - 1) * size)
-    return list(session.execute(stmt).scalars()), total
-
-
-def list_devices(
-    session: Session,
-    *,
-    device_type: str | None = None,
-    status: str | None = None,
-    keyword: str | None = None,
-    include_deleted: bool = False,
-    page: int = 1,
-    size: int = 20,
-) -> tuple[list[Device], int]:
-    from sqlalchemy import func
-
-    stmt = select(Device)
-    count_stmt = select(func.count()).select_from(Device)
-
-    conditions = []
-    if not include_deleted:
-        conditions.append(Device.is_deleted.is_(False))
-    if device_type:
-        conditions.append(Device.device_type == device_type)
-    if status:
-        conditions.append(Device.status == status)
-    if keyword:
-        like = f"%{keyword}%"
-        conditions.append(Device.device_name.like(like) | Device.device_code.like(like))
-
-    for cond in conditions:
-        stmt = stmt.where(cond)
-        count_stmt = count_stmt.where(cond)
-
-    total = session.execute(count_stmt).scalar_one()
-    stmt = stmt.order_by(Device.id).limit(size).offset((page - 1) * size)
     return list(session.execute(stmt).scalars()), total

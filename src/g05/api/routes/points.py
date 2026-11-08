@@ -1,12 +1,15 @@
-"""测点 API：查询 / 新增 / 改名（带影响面）/ 软删 / 版本史。"""
+"""测点 API：查询 / 新增 / 改名（带影响面）/ 软删 / 版本史。
+
+错误码统一走 :mod:`g05.schemas.errors` 冻结的码表（A 在 issue G05-02 里定的）。
+"""
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from g05.api.deps import get_db, get_operator
+from g05.api.deps import get_db, get_operator, get_trace_id
 from g05.audit.service import AuditService
 from g05.core.logging import get_logger
 from g05.models.device import Device
@@ -18,6 +21,7 @@ from g05.schemas.dto import (
     PointRename,
     RenameResult,
 )
+from g05.schemas.errors import ApiError, ErrorCode
 from g05.services.point_service import (
     PointConflictError,
     PointNotFoundError,
@@ -33,12 +37,12 @@ log = get_logger("api.points")
 @router.get("", response_model=Page[PointOut], summary="分页查询测点")
 def query_points(
     db: Session = Depends(get_db),
-    device_id: int | None = Query(None),
-    point_type: str | None = Query(None),
-    keyword: str | None = Query(None),
-    include_deleted: bool = Query(False),
-    page: int = Query(1, ge=1),
-    size: int = Query(20, ge=1, le=200),
+    device_id: int | None = Query(None, description="按所属设备过滤"),
+    point_type: str | None = Query(None, description="测点类型过滤"),
+    keyword: str | None = Query(None, description="编号/名称模糊搜索"),
+    include_deleted: bool = Query(False, description="是否包含已软删的测点"),
+    page: int = Query(1, ge=1, description="页码，从 1 开始；越界页返回空列表"),
+    size: int = Query(20, ge=1, le=200, description="每页条数，1~200"),
 ):
     items, total = list_points(
         db,
@@ -56,7 +60,11 @@ def query_points(
 def get_point(point_id: int, db: Session = Depends(get_db)):
     point = db.get(MeasurePoint, point_id)
     if point is None:
-        raise HTTPException(404, f"测点 {point_id} 不存在")
+        raise ApiError(
+            ErrorCode.POINT_NOT_FOUND,
+            f"测点 {point_id} 不存在",
+            detail={"point_id": point_id},
+        )
     return point
 
 
@@ -65,16 +73,25 @@ def create_point(
     payload: PointCreate,
     db: Session = Depends(get_db),
     operator: str = Depends(get_operator),
+    trace_id: str = Depends(get_trace_id),
 ):
     device = db.get(Device, payload.device_id)
     if device is None or device.is_deleted:
-        raise HTTPException(400, f"设备 {payload.device_id} 不存在（外键约束）")
+        raise ApiError(
+            ErrorCode.POINT_DEVICE_NOT_FOUND,
+            f"设备 {payload.device_id} 不存在（外键约束）",
+            detail={"device_id": payload.device_id},
+        )
 
     exists = db.execute(
         select(MeasurePoint).where(MeasurePoint.point_code == payload.point_code)
     ).scalar_one_or_none()
     if exists:
-        raise HTTPException(409, f"测点编号 {payload.point_code} 已存在")
+        raise ApiError(
+            ErrorCode.DUPLICATE_POINT,
+            f"测点编号 {payload.point_code} 已存在",
+            detail={"point_code": payload.point_code},
+        )
 
     point = MeasurePoint(**payload.model_dump())
     point._g05_skip_audit = True  # 下方显式写带 reason 的审计  # noqa: SLF001
@@ -90,6 +107,7 @@ def create_point(
         business_key=point.point_code,
         new=payload.model_dump(),
         reason="新增测点",
+        trace_id=trace_id,
     )
     db.commit()
     return point
@@ -100,19 +118,30 @@ def rename(
     point_id: int,
     payload: PointRename,
     db: Session = Depends(get_db),
+    operator: str = Depends(get_operator),
+    trace_id: str = Depends(get_trace_id),
 ):
+    # 操作人以请求头 X-Operator 为准；body 里的 operator 只作兜底。
+    # 理由：全站写操作统一走请求头，审计表里的 operator 才有同一个来源 ——
+    # body 字段可以被随手伪造，头是同一套中间件统一注入的。
+    effective_operator = operator if operator != "anonymous" else payload.operator
     try:
         result = rename_point(
             db,
             point_id,
             payload.new_name,
-            operator=payload.operator,
+            operator=effective_operator,
             reason=payload.reason,
+            trace_id=trace_id,
         )
     except PointNotFoundError as exc:
-        raise HTTPException(404, str(exc)) from exc
+        raise ApiError(
+            ErrorCode.POINT_NOT_FOUND, str(exc), detail={"point_id": point_id}
+        ) from exc
     except PointConflictError as exc:
-        raise HTTPException(409, str(exc)) from exc
+        raise ApiError(
+            ErrorCode.RENAME_CONFLICT, str(exc), detail={"point_id": point_id}
+        ) from exc
 
     return RenameResult(**result)
 
@@ -122,11 +151,14 @@ def delete_point(
     point_id: int,
     db: Session = Depends(get_db),
     operator: str = Depends(get_operator),
+    trace_id: str = Depends(get_trace_id),
 ):
     try:
-        point = soft_delete_point(db, point_id, operator=operator)
+        point = soft_delete_point(db, point_id, operator=operator, trace_id=trace_id)
     except PointNotFoundError as exc:
-        raise HTTPException(404, str(exc)) from exc
+        raise ApiError(
+            ErrorCode.POINT_NOT_FOUND, str(exc), detail={"point_id": point_id}
+        ) from exc
     return {"ok": True, "point_id": point.id, "version": point.version, "action": "soft_delete"}
 
 
@@ -134,7 +166,11 @@ def delete_point(
 def point_history(point_id: int, db: Session = Depends(get_db)):
     point = db.get(MeasurePoint, point_id)
     if point is None:
-        raise HTTPException(404, f"测点 {point_id} 不存在")
+        raise ApiError(
+            ErrorCode.POINT_NOT_FOUND,
+            f"测点 {point_id} 不存在",
+            detail={"point_id": point_id},
+        )
 
     entries = AuditService.history_of(db, point.point_code, table_name="measure_point")
     return {

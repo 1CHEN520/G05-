@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib
 import time
+import uuid
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -213,6 +214,29 @@ app.openapi = _custom_openapi  # type: ignore[method-assign]
 
 
 @app.middleware("http")
+async def trace_middleware(request: Request, call_next):
+    """给每个请求打上 trace_id，并回写到响应头。
+
+    这是"报障时能捞到堆栈"的前提：
+    - 响应头 ``X-Trace-Id`` —— 用户截图里就有号；
+    - ``request.state.trace_id`` —— 异常处理器与审计记录读的是同一个值，
+      所以用户报的那个号，一定能在日志里搜到对应的完整堆栈。
+
+    客户端自带 ``X-Trace-Id`` 时沿用它的，方便跨服务串联同一次调用。
+    """
+    incoming = request.headers.get("X-Trace-Id")
+    trace_id = (incoming or uuid.uuid4().hex)[:64]
+    request.state.trace_id = trace_id
+    try:
+        response = await call_next(request)
+    except Exception:
+        # 异常由下方的全局处理器兜底；这里只保证状态已写入，供处理器取用
+        raise
+    response.headers["X-Trace-Id"] = trace_id
+    return response
+
+
+@app.middleware("http")
 async def timing_middleware(request: Request, call_next):
     """请求耗时埋点，超过 1s 打 WARN。"""
     started = time.perf_counter()
@@ -233,9 +257,19 @@ async def timing_middleware(request: Request, call_next):
     return response
 
 
+def _trace_id_of(request: Request) -> str:
+    """取本次请求的 trace_id；中间件没跑过时兜底生成一个。"""
+    state_trace_id = getattr(request.state, "trace_id", None)
+    if state_trace_id:
+        return str(state_trace_id)
+    incoming = request.headers.get("X-Trace-Id")
+    return (incoming or uuid.uuid4().hex)[:64]
+
+
 @app.exception_handler(ApiError)
 async def api_error_handler(request: Request, exc: ApiError):
     """业务错误：带冻结的错误码，客户端可据此做分支判断。"""
+    trace_id = _trace_id_of(request)
     log.warning(
         "api error",
         extra={
@@ -243,12 +277,14 @@ async def api_error_handler(request: Request, exc: ApiError):
                 "code": exc.code,
                 "path": request.url.path,
                 "message": exc.message,
+                "trace_id": trace_id,
             }
         },
     )
     return JSONResponse(
         status_code=exc.status_code,
         content={"code": exc.code, "message": exc.message, "detail": exc.detail},
+        headers={"X-Trace-Id": trace_id},
     )
 
 
@@ -266,6 +302,7 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
     for err in exc.errors():
         loc = ".".join(str(p) for p in err.get("loc", ()) if p != "body")
         fields.append({"field": loc, "reason": err.get("msg", "参数不合法")})
+    trace_id = _trace_id_of(request)
     return JSONResponse(
         status_code=422,
         content={
@@ -273,6 +310,7 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
             "message": "请求参数不合法",
             "detail": {"fields": fields},
         },
+        headers={"X-Trace-Id": trace_id},
     )
 
 
@@ -304,6 +342,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             ErrorCode.INTERNAL_ERROR if exc.status_code >= 500 else ErrorCode.INVALID_PARAM,
         )
 
+    trace_id = _trace_id_of(request)
     log.warning(
         "http error",
         extra={
@@ -312,29 +351,44 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
                 "status": exc.status_code,
                 "path": request.url.path,
                 "message": message,
+                "trace_id": trace_id,
             }
         },
     )
     return JSONResponse(
         status_code=exc.status_code,
         content={"code": code, "message": message, "detail": extra},
+        headers={"X-Trace-Id": trace_id},
     )
 
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    """兜底异常：记录完整堆栈，对外只返回简要信息（不泄露内部细节）。"""
+    """兜底异常：记录完整堆栈，对外只返回简要信息（不泄露内部细节）。
+
+    对外**不含堆栈**，但带 ``trace_id``：
+    用户报障时报这个号，服务端拿它去日志里就能捞到完整堆栈。
+    堆栈只进服务端日志（``log.exception`` 会带上 exc_info）。
+    """
+    trace_id = _trace_id_of(request)
     log.exception(
         "unhandled error",
-        extra={"extra_fields": {"path": request.url.path, "error": str(exc)}},
+        extra={
+            "extra_fields": {
+                "path": request.url.path,
+                "trace_id": trace_id,
+                "error_type": type(exc).__name__,
+            }
+        },
     )
     return JSONResponse(
         status_code=500,
         content={
             "code": ErrorCode.INTERNAL_ERROR,
             "message": "服务内部错误，请查看服务端日志",
-            "detail": {"path": request.url.path},
+            "detail": {"trace_id": trace_id, "path": request.url.path},
         },
+        headers={"X-Trace-Id": trace_id},
     )
 
 

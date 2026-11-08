@@ -10,6 +10,11 @@
 <header>
   <h1>G05 设备台账与测点资产目录</h1>
   <span class="badge">工业级 L2</span>
+  <div class="operator">
+    <label for="op-input" class="muted">操作人</label>
+    <input id="op-input" placeholder="填你的名字，写操作会记进审计" maxlength="64" />
+    <span id="op-hint" class="muted"></span>
+  </div>
   <div class="health"><span class="dot" id="hdot"></span><span id="htext">检测中…</span></div>
 </header>
 
@@ -76,7 +81,7 @@
           <thead><tr>
             <th>ID</th><th>编号</th><th>名称</th><th>类型</th><th>位置</th><th>状态</th><th>版本</th><th>操作</th>
           </tr></thead>
-          <tbody id="dev-body"><tr><td colspan="8" class="empty">暂无数据</td></tr></tbody>
+          <tbody id="dev-body"></tbody>
         </table>
       </div>
       <div class="row" style="margin-top:12px;justify-content:flex-end">
@@ -108,7 +113,7 @@
             <th>ID</th><th>测点编号</th><th>名称</th><th>类型</th><th>单位</th>
             <th>所属设备</th><th>版本</th><th>操作</th>
           </tr></thead>
-          <tbody id="pt-body"><tr><td colspan="8" class="empty">暂无数据</td></tr></tbody>
+          <tbody id="pt-body"></tbody>
         </table>
       </div>
       <div class="row" style="margin-top:12px;justify-content:flex-end">
@@ -180,7 +185,7 @@
           <thead><tr>
             <th>ID</th><th>时间</th><th>表</th><th>业务键</th><th>动作</th><th>操作人</th><th>原因</th><th>变更</th>
           </tr></thead>
-          <tbody id="au-body"><tr><td colspan="8" class="empty">暂无审计记录</td></tr></tbody>
+          <tbody id="au-body"></tbody>
         </table>
       </div>
     </div>
@@ -195,7 +200,11 @@
         <button class="btn" onclick="doImport()" id="import-btn">开始导入</button>
         <a class="btn ghost" href="/api/import/template" target="_blank" style="text-decoration:none;display:inline-block">模板说明</a>
       </div>
-      <div id="import-result"></div>
+      <div id="import-result">
+        <div class="empty">
+          <div class="empty-msg">还没有导入记录。选一个 Excel 文件开始，或先下载模板看看格式。</div>
+        </div>
+      </div>
     </div>
   </section>
 </main>
