@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib
 import time
+import uuid
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -323,17 +324,29 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    """兜底异常：记录完整堆栈，对外只返回简要信息（不泄露内部细节）。"""
+    """兜底异常：记录完整堆栈，对外只返回简要信息（不泄露内部细节）。
+
+    响应体里带 ``trace_id``：用户报障时把这个 id 给我们，
+    就能在服务端日志里定位到那条完整堆栈 —— **这是"日志里能用 trace_id
+    找到完整堆栈"这条验收标准的落点**。
+    """
+    trace_id = request.headers.get("X-Trace-Id") or uuid.uuid4().hex
     log.exception(
         "unhandled error",
-        extra={"extra_fields": {"path": request.url.path, "error": str(exc)}},
+        extra={
+            "extra_fields": {
+                "path": request.url.path,
+                "error": str(exc),
+                "trace_id": trace_id,
+            }
+        },
     )
     return JSONResponse(
         status_code=500,
         content={
             "code": ErrorCode.INTERNAL_ERROR,
             "message": "服务内部错误，请查看服务端日志",
-            "detail": {"path": request.url.path},
+            "detail": {"path": request.url.path, "trace_id": trace_id},
         },
     )
 
