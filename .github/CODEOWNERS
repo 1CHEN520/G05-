@@ -23,6 +23,7 @@ src/g05/__init__.py  @1CHEN520
 src/g05/__main__.py  @1CHEN520
 src/g05/cli.py  @1CHEN520
 src/g05/main.py  @1CHEN520
+AGENTS.md  @1CHEN520
 src/g05/core/**  @1CHEN520
 src/g05/schemas/dto.py  @1CHEN520
 src/g05/schemas/errors.py  @1CHEN520
@@ -46,6 +47,8 @@ scripts/make_roster_xlsx.py  @1CHEN520
 scripts/apply_roster.py  @1CHEN520
 scripts/demo_acceptance.py  @1CHEN520
 tests/test_error_contract.py  @1CHEN520
+tests/test_logging_contract.py  @1CHEN520
+tests/test_openapi_contract.py  @1CHEN520
 docs/团队角色清单.xlsx  @1CHEN520
 data/archive/.gitkeep  @1CHEN520
 data/db/.gitkeep  @1CHEN520

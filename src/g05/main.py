@@ -366,9 +366,13 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 async def unhandled_exception_handler(request: Request, exc: Exception):
     """兜底异常：记录完整堆栈，对外只返回简要信息（不泄露内部细节）。
 
-    对外**不含堆栈**，但带 ``trace_id``：
-    用户报障时报这个号，服务端拿它去日志里就能捞到完整堆栈。
-    堆栈只进服务端日志（``log.exception`` 会带上 exc_info）。
+    对外**不含堆栈**，但响应体带 ``trace_id``：用户报障时报这个号，
+    服务端拿它去日志里就能捞到完整堆栈 —— **这是"日志里能用 trace_id
+    找到完整堆栈"这条验收标准的落点**。
+
+    与 #60 之前落地版本的差异：trace_id 优先取 trace 中间件写在
+    ``request.state`` 上的值 —— 同一请求内审计记录与 500 响应共用一个号，
+    而不是各处各自生成导致对不上。
     """
     trace_id = _trace_id_of(request)
     log.exception(
@@ -377,7 +381,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
             "extra_fields": {
                 "path": request.url.path,
                 "trace_id": trace_id,
-                "error_type": type(exc).__name__,
+                "error": str(exc),
             }
         },
     )

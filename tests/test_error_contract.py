@@ -179,3 +179,25 @@ def test_internal_error_does_not_leak_internals(client):
     assert body["code"] == ErrorCode.INTERNAL_ERROR
     assert "内部炸了" not in body["message"]
     assert "内部炸了" not in str(body["detail"])
+
+
+def test_internal_error_carries_trace_id(client):
+    """issue #33 验收标准：500 响应体里**没有堆栈，但有 trace_id**。
+
+    trace_id 是用户报障时给我们的那个 id —— 有了它就能在服务端日志里
+    定位到对应的完整堆栈。没有它，用户只能说"刚才报了个错"，我们无从查起。
+    """
+    resp = client.get("/boom", headers={"X-Trace-Id": "trace-abc-123"})
+    body = resp.json()
+    assert resp.status_code == 500
+    # 有 trace_id
+    assert "trace-abc-123" in str(body["detail"]), f"500 响应体缺 trace_id：{body}"
+    # 但没有堆栈
+    assert "Traceback" not in str(body)
+    assert "File \"" not in str(body)
+
+
+def test_internal_error_generates_trace_id_when_absent(client):
+    """没带 X-Trace-Id 时也要生成一个，否则没法定位。"""
+    body = client.get("/boom").json()
+    assert body["detail"].get("trace_id"), f"未提供 trace_id 时应自动生成：{body}"
