@@ -40,6 +40,7 @@ roles:
       - src/g05/__main__.py
       - src/g05/cli.py
       - src/g05/main.py
+      - AGENTS.md
       - src/g05/core/**
       - src/g05/schemas/dto.py
       - src/g05/schemas/errors.py
@@ -63,6 +64,8 @@ roles:
       - scripts/apply_roster.py
       - scripts/demo_acceptance.py
       - tests/test_error_contract.py
+      - tests/test_logging_contract.py
+      - tests/test_openapi_contract.py
       - docs/团队角色清单.xlsx
       - data/archive/.gitkeep
       - data/db/.gitkeep
