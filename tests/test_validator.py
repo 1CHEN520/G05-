@@ -81,7 +81,6 @@ def test_foreign_key_violation():
 
 def test_type_violation():
     """type 规则：device_name 之外再给一个非整数列校验整数类型。"""
-    engine = _engine()
     rows = [
         {"device_code": "FAN-0001", "device_name": "x", "device_type": "风机", "location": "一厂A区"}
     ]

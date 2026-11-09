@@ -102,7 +102,7 @@ def test_json_export_matches_api_contract(tmp_path):
 
     assert payload["ok"] is False  # measure_point 未通过
     assert [d["sheet"] for d in payload["reports"]] == ["device", "measure_point"]
-    for report, data in zip(reports, payload["reports"]):
+    for report, data in zip(reports, payload["reports"], strict=True):
         assert data == report.to_dict()  # 与接口返回逐字段一致
 
 
