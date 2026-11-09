@@ -92,6 +92,7 @@ src/g05/importers/validator.py  @lzx123314
 src/g05/reports/**  @lzx123314
 config/rules.yaml  @lzx123314
 tests/test_validator.py  @lzx123314
+tests/test_report_export.py  @lzx123314
 
 # C3 开发 · 审计与变更追踪
 src/g05/models/audit_log.py  @jiang3210656231

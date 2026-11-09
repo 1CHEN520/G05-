@@ -141,6 +141,7 @@ roles:
       - src/g05/reports/**
       - config/rules.yaml
       - tests/test_validator.py
+      - tests/test_report_export.py
     mentor: B1
     skills: 规则引擎 / 数据质量 / 评分模型 / 报表导出
 
