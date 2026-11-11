@@ -61,7 +61,7 @@ class RuleConfigError(Exception):
 
     def __init__(self, problems: list[str]) -> None:
         self.problems = problems
-        super().__init__("规则配置非法，共 %d 处:\n  - %s" % (len(problems), "\n  - ".join(problems)))
+        super().__init__(f"规则配置非法，共 {len(problems)} 处:\n  - " + "\n  - ".join(problems))
 
 
 # ---------------- 行号索引：节点路径 -> 1-based 行号 ----------------
@@ -135,7 +135,7 @@ def _validate_rules(rules: dict, lines: dict[tuple[Any, ...], int] | None) -> No
         problems.append(f"{loc} · {where}: {msg}")
 
     if not isinstance(rules, dict):
-        raise RuleConfigError(["规则配置顶层必须是映射（mapping），实际 %s" % type(rules).__name__])
+        raise RuleConfigError([f"规则配置顶层必须是映射（mapping），实际 {type(rules).__name__}"])
 
     for key in rules:
         if key not in {"settings", "sheets", "scoring"}:
@@ -339,7 +339,7 @@ class RuleEngine:
         self._alias_maps = {sheet: self._build_alias_map(rule) for sheet, rule in self._sheets.items()}
 
     @classmethod
-    def from_yaml(cls, path: str | Path) -> "RuleEngine":
+    def from_yaml(cls, path: str | Path) -> RuleEngine:
         """从指定 YAML 文件构建引擎（结构非法带行号报错）。"""
         return cls(source=path)
 
@@ -574,9 +574,8 @@ class RuleEngine:
                 float(str(value))
             except (TypeError, ValueError):
                 return CellIssue(row_no, name, "type", f"{name} 应为数值，实际: {value}", value)
-        elif expected_type == "date":
-            if not self._is_date(value):
-                return CellIssue(row_no, name, "type", f"{name} 应为日期（ISO 格式），实际: {value}", value)
+        elif expected_type == "date" and not self._is_date(value):
+            return CellIssue(row_no, name, "type", f"{name} 应为日期（ISO 格式），实际: {value}", value)
 
         text = str(value)
 
