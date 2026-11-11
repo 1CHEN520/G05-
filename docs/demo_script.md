@@ -200,13 +200,19 @@ pytest -q
 
 "60 台设备、180 个测点、数据库 WAL 模式。右边是开题四问的自检表。"
 
+> **万一没看到**：KPI 是 0 → 数据没灌，终端跑 `python -m g05 seed` 后刷新；仍不行直接跳 ③④，从测点页讲血缘。
+
 **② 设备台账 → 点某台设备的「测点」**
 
 "点进去看这台风机下挂了 3 个测点。"
 
+> **万一没看到**：接口报错 → 打开 `/docs` 的 `GET /api/devices/{id}/points` 用 id=1 演示接口返回，话术改为"看接口层"。
+
 **③ 测点目录 → 找一个测点点「血缘」**
 
 "比如 `FAN0001_VIB`，点血缘 —— 下方 11 个受影响对象，报表 5 个、任务 3 个、接口 2 个、数据集 1 个。每条都有完整依赖路径。"
+
+> **万一没看到**：血缘为空 → 演示前先跑 `python scripts/fault_inject.py --case tamper` 之外先点开一次确认有数据；现场为空就切 `/docs` 的 `GET /api/lineage/graph`，指出 `total=191 returned=191`。
 
 **④ 点「改名」**
 
@@ -217,9 +223,13 @@ pytest -q
 
 "改完提示：版本 v2，影响下游 11 个对象。同时这里已经自动弹出影响面。"
 
+> **万一没看到**：改名报错（并发/锁）→ 刷新重试一次；仍失败改用测点列表里另一台设备的测点演示，话术不变。
+
 **⑤ 切到审计页**
 
 "看最新一条：动作 RENAME，操作人 web-ui，原因「工艺变更」，右边是变更前后快照。"
+
+> **万一没看到**：审计页打不开 → `curl -s http://127.0.0.1:8000/api/audit` 看接口返回；都不行就跳过 ⑤，直接进故障注入（那是最高分项）。
 
 ### 4.2 故障注入（2 分钟）—— **重点**
 
@@ -273,6 +283,16 @@ python scripts/fault_inject.py --all
 ```
 
 "8 个线程同时写，320 条全部入库，0 报错。"
+
+**故障注入各案的"万一没看到"**
+
+| 注入案 | 万一没看到预期结果 | Plan B |
+|---|---|---|
+| 孤儿记录未被拒 | 外键没开 | `curl /healthz` 看 `foreign_keys`；现场用 `/docs` 的 `POST /api/audit/verify-immutable` 同款思路改讲外键开关的设计（`core/db.py` 的 PRAGMA 钩子） |
+| 篡改未被拦 | 触发器缺失 | 打开 `/docs` 找 `POST /api/audit/verify-immutable` 点 Try it out，让接口层证明拦截 |
+| 脏数据被放行 | 门禁失效 | 重跑一次 `--case dirty`；仍失败就打开 `tests/test_validator.py::test_fatal_rule_cannot_be_offset_by_score` 讲"结构性错误一票否决"的测试证据 |
+| 强杀后库损坏 | WAL 没生效 | `python -m g05 initdb --drop && python -m g05 seed`（约 30 秒重建）后继续；顺手讲"这就是自愈能力的现场演示" |
+| 并发报 locked | busy_timeout 不够 | 调大 `config/database.yaml` 的 `pragma.busy_timeout` 到 10000 重跑；仍失败念实测数字（320/320，0.19s）并打开 `scripts/fault_inject.py` 的 `case_concurrent` 源码 |
 
 ### 4.3 一键运行证明（可选，若时间够）
 
@@ -379,7 +399,7 @@ SQLite 的真实限制是**单写者**，高并发写会串行。我们做了三
 
 **第二，坏行号是 Excel 行号不是索引。** `test_bad_row_numbers_are_excel_rows` 断言第二条数据报 `row_no=3`（表头占第 1 行）。
 
-**第三，性能是断言不是口号。** `test_import_10k_rows_under_30s` 和 `test_impact_query_performance` 直接断言耗时，CI 跑不过就合不了。"
+**第三，性能是断言不是口号。** `test_import_10k_rows_under_30s`（`tests/test_importer.py`）和 `test_200_node_query_is_fast_and_sql_scales_with_depth`（`tests/test_lineage.py`）直接断言耗时，CI 跑不过就合不了。"
 
 ### Q6：如果评委现在删掉一个文件，系统还能跑吗？
 
@@ -403,18 +423,52 @@ SQLite 的真实限制是**单写者**，高并发写会串行。我们做了三
 | 二、方案（架构） | 1.0 min | 2.5 | A |
 | 二、方案（血缘） | 1.0 min | 3.5 | B2 |
 | 二、方案（审计） | 0.5 min | 4.0 | C3 |
-| 三、实现（走查） | 1.5 min | 5.5 | 全员 |
-| 三、实现（代码） | 1.0 min | 6.5 | B1/C2/C1 |
-| 三、实现（测试） | 0.5 min | 7.0 | C5 |
-| 四、验证（正常流程） | 1.0 min | 8.0 | A |
-| 四、验证（故障注入） | 2.0 min | 10.0 | C5 操作，A 解说 |
-| 五、收尾 | 0.5 min | 10.5 | A |
+| 三、实现（走查） | 1.0 min | 5.0 | 全员 |
+| 三、实现（代码） | 1.0 min | 6.0 | B1/C2/C1 |
+| 三、实现（测试） | 0.5 min | 6.5 | C5 |
+| 四、验证（正常流程） | 1.0 min | 7.5 | A |
+| 四、验证（故障注入） | 2.0 min | 9.5 | C5 操作，A 解说 |
+| 五、收尾 | 0.5 min | 10.0 | A |
 
 > **超时预案**：若到 8 分钟还没开始故障注入，跳过 §4.1 的正常流程，直接跑 `fault_inject.py --all`（这是最高分项）。
 
 ---
 
-## 八、演练记录
+## 八、兜底方案：演示环境崩了怎么讲
+
+**三级降级，每一级都要提前写好"讲什么"，不是临场发挥：**
+
+### 1 级：服务起不来（/healthz 打不开）
+
+```bash
+python -m g05 preflight        # 定位哪一项红了
+python -m g05 initdb --drop && python -m g05 seed
+python -m g05 serve            # 重启
+```
+
+重建约 30 秒。等待期间话术："我们正好演示一下环境自检——`preflight` 会逐项报告 Python 版本、依赖、触发器、WAL 状态，这就是 US-10 一键启动的验收命令。"
+
+### 2 级：服务反复崩 / 数据库损坏
+
+放弃在线演示，全部走终端证据：
+
+1. `python scripts/fault_inject.py --case kill` —— 强杀恢复仍可演示（不依赖 Web）
+2. `pytest -q` —— 46 个单测全绿就是最硬的验证
+3. 逐条念第六节 Q&A 里的数字，每个数字报出处（文件/测试名）
+
+### 3 级：整机/投影崩
+
+白板画四表关系图（设备 ← 测点 ← 记录，告警挂测点），口述三条主线：
+
+- 血缘：改名影响面 BFS，实测 11 个下游节点
+- 审计：触发器 `RAISE(ABORT)`，双保险（应用层无 update/delete 方法 + 数据库触发器）
+- 门禁：整批原子 + 结构性错误一票否决
+
+收尾话术："环境问题不影响架构正确性，欢迎会后照 runbook 复现。"
+
+---
+
+## 九、演练记录
 
 | 轮次 | 日期 | 问题 | 改进 |
 |---|---|---|---|
