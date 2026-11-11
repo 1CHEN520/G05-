@@ -171,6 +171,7 @@ roles:
       - src/g05/api/routes/devices.py
       - src/g05/api/routes/points.py
       - src/g05/services/**
+      - tests/test_c4_api.py
       - web/index.html
       - web/css/**
       - web/js/api.js
