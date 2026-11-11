@@ -160,6 +160,27 @@ python -c "import g05.core.config as c; print(c.PROJECT_ROOT)"
 # 不等于当前目录的话，清掉多余 worktree 再重装
 ```
 
+### 3.4 多工作区的 git 身份隔离（C5 专属工作区约定）
+
+一台机器多人（或代推）时，提交身份靠**仓库级 local 配置**隔离，不能靠记忆：
+
+| 工作区 | 路径 | git 身份 | 用途 |
+|---|---|---|---|
+| A 主工作区 | `D:/G05` | 全局：`chengjinyan <chengjinyan@users.noreply.github.com>`（→ @1CHEN520） | 组长日常 |
+| C5 专属 | `D:/hyj/G05-` | local：`韩永健 <326282822+HC123-WW@users.noreply.github.com>`（→ @HC123-WW） | C5 的活在这里做，提交自动归他名下 |
+
+规则：
+
+1. **改谁的东西就在谁的工作区里改** —— 提交作者由 `user.email` 关联 GitHub 账号，
+   弄错工作区贡献就记到别人头上（历史教训：C5 的 5 个提交曾全部记在 1CHEN520 名下，
+   贡献表里专门做了归属口径说明）。
+2. 身份设置用 **`git config user.name/user.email`（local 级）**，永远不动全局配置。
+3. noreply 邮箱用标准格式 `<GitHub数字ID>+<用户名>@users.noreply.github.com`，
+   ID 可用 `gh api users/<用户名> --jq .id` 查。
+4. 推送凭据与提交作者无关 —— 推送仍走仓库既有凭据，GitHub 显示
+   "authored by 韩永健, pushed via 1CHEN520"，贡献归属看 author 字段。
+5. 新增他人专属工作区时照此模板：独立目录 + clone + local 身份 + 一次空提交验证 author 后回退。
+
 ---
 
 ## 4. 验收纪律：验收标准必须逐条跑命令
