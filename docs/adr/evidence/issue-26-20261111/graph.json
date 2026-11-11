@@ -1,0 +1,4598 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "type": "point",
+      "key": "FAN0001_VIB",
+      "name": "振动(FAN0001_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 2,
+      "type": "point",
+      "key": "FAN0001_TEMP",
+      "name": "温度(FAN0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 3,
+      "type": "point",
+      "key": "FAN0001_RPM",
+      "name": "转速(FAN0001_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 4,
+      "type": "point",
+      "key": "FAN0002_VIB",
+      "name": "振动(FAN0002_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 5,
+      "type": "point",
+      "key": "FAN0002_TEMP",
+      "name": "温度(FAN0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 6,
+      "type": "point",
+      "key": "FAN0002_RPM",
+      "name": "转速(FAN0002_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 7,
+      "type": "point",
+      "key": "FAN0003_VIB",
+      "name": "振动(FAN0003_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 8,
+      "type": "point",
+      "key": "FAN0003_TEMP",
+      "name": "温度(FAN0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 9,
+      "type": "point",
+      "key": "FAN0003_RPM",
+      "name": "转速(FAN0003_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 10,
+      "type": "point",
+      "key": "FAN0004_VIB",
+      "name": "振动(FAN0004_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 11,
+      "type": "point",
+      "key": "FAN0004_TEMP",
+      "name": "温度(FAN0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 12,
+      "type": "point",
+      "key": "FAN0004_RPM",
+      "name": "转速(FAN0004_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 13,
+      "type": "point",
+      "key": "FAN0005_VIB",
+      "name": "振动(FAN0005_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 14,
+      "type": "point",
+      "key": "FAN0005_TEMP",
+      "name": "温度(FAN0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 15,
+      "type": "point",
+      "key": "FAN0005_RPM",
+      "name": "转速(FAN0005_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 16,
+      "type": "point",
+      "key": "PMP0001_PRESS",
+      "name": "压力(PMP0001_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 17,
+      "type": "point",
+      "key": "PMP0001_FLOW",
+      "name": "流量(PMP0001_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 18,
+      "type": "point",
+      "key": "PMP0001_CUR",
+      "name": "电流(PMP0001_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 19,
+      "type": "point",
+      "key": "PMP0002_PRESS",
+      "name": "压力(PMP0002_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 20,
+      "type": "point",
+      "key": "PMP0002_FLOW",
+      "name": "流量(PMP0002_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 21,
+      "type": "point",
+      "key": "PMP0002_CUR",
+      "name": "电流(PMP0002_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 22,
+      "type": "point",
+      "key": "PMP0003_PRESS",
+      "name": "压力(PMP0003_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 23,
+      "type": "point",
+      "key": "PMP0003_FLOW",
+      "name": "流量(PMP0003_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 24,
+      "type": "point",
+      "key": "PMP0003_CUR",
+      "name": "电流(PMP0003_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 25,
+      "type": "point",
+      "key": "PMP0004_PRESS",
+      "name": "压力(PMP0004_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 26,
+      "type": "point",
+      "key": "PMP0004_FLOW",
+      "name": "流量(PMP0004_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 27,
+      "type": "point",
+      "key": "PMP0004_CUR",
+      "name": "电流(PMP0004_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 28,
+      "type": "point",
+      "key": "PMP0005_PRESS",
+      "name": "压力(PMP0005_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 29,
+      "type": "point",
+      "key": "PMP0005_FLOW",
+      "name": "流量(PMP0005_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 30,
+      "type": "point",
+      "key": "PMP0005_CUR",
+      "name": "电流(PMP0005_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 31,
+      "type": "point",
+      "key": "CMP0001_PRESS",
+      "name": "压力(CMP0001_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 32,
+      "type": "point",
+      "key": "CMP0001_TEMP",
+      "name": "温度(CMP0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 33,
+      "type": "point",
+      "key": "CMP0001_VIB",
+      "name": "振动(CMP0001_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 34,
+      "type": "point",
+      "key": "CMP0002_PRESS",
+      "name": "压力(CMP0002_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 35,
+      "type": "point",
+      "key": "CMP0002_TEMP",
+      "name": "温度(CMP0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 36,
+      "type": "point",
+      "key": "CMP0002_VIB",
+      "name": "振动(CMP0002_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 37,
+      "type": "point",
+      "key": "CMP0003_PRESS",
+      "name": "压力(CMP0003_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 38,
+      "type": "point",
+      "key": "CMP0003_TEMP",
+      "name": "温度(CMP0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 39,
+      "type": "point",
+      "key": "CMP0003_VIB",
+      "name": "振动(CMP0003_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 40,
+      "type": "point",
+      "key": "CMP0004_PRESS",
+      "name": "压力(CMP0004_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 41,
+      "type": "point",
+      "key": "CMP0004_TEMP",
+      "name": "温度(CMP0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 42,
+      "type": "point",
+      "key": "CMP0004_VIB",
+      "name": "振动(CMP0004_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 43,
+      "type": "point",
+      "key": "CMP0005_PRESS",
+      "name": "压力(CMP0005_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 44,
+      "type": "point",
+      "key": "CMP0005_TEMP",
+      "name": "温度(CMP0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 45,
+      "type": "point",
+      "key": "CMP0005_VIB",
+      "name": "振动(CMP0005_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 46,
+      "type": "point",
+      "key": "MTR0001_CUR",
+      "name": "电流(MTR0001_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 47,
+      "type": "point",
+      "key": "MTR0001_TEMP",
+      "name": "温度(MTR0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 48,
+      "type": "point",
+      "key": "MTR0001_RPM",
+      "name": "转速(MTR0001_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 49,
+      "type": "point",
+      "key": "MTR0002_CUR",
+      "name": "电流(MTR0002_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 50,
+      "type": "point",
+      "key": "MTR0002_TEMP",
+      "name": "温度(MTR0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 51,
+      "type": "point",
+      "key": "MTR0002_RPM",
+      "name": "转速(MTR0002_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 52,
+      "type": "point",
+      "key": "MTR0003_CUR",
+      "name": "电流(MTR0003_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 53,
+      "type": "point",
+      "key": "MTR0003_TEMP",
+      "name": "温度(MTR0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 54,
+      "type": "point",
+      "key": "MTR0003_RPM",
+      "name": "转速(MTR0003_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 55,
+      "type": "point",
+      "key": "MTR0004_CUR",
+      "name": "电流(MTR0004_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 56,
+      "type": "point",
+      "key": "MTR0004_TEMP",
+      "name": "温度(MTR0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 57,
+      "type": "point",
+      "key": "MTR0004_RPM",
+      "name": "转速(MTR0004_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 58,
+      "type": "point",
+      "key": "MTR0005_CUR",
+      "name": "电流(MTR0005_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 59,
+      "type": "point",
+      "key": "MTR0005_TEMP",
+      "name": "温度(MTR0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 60,
+      "type": "point",
+      "key": "MTR0005_RPM",
+      "name": "转速(MTR0005_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 61,
+      "type": "point",
+      "key": "RED0001_VIB",
+      "name": "振动(RED0001_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 62,
+      "type": "point",
+      "key": "RED0001_TEMP",
+      "name": "温度(RED0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 63,
+      "type": "point",
+      "key": "RED0001_NOISE",
+      "name": "噪声(RED0001_NOISE)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 64,
+      "type": "point",
+      "key": "RED0002_VIB",
+      "name": "振动(RED0002_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 65,
+      "type": "point",
+      "key": "RED0002_TEMP",
+      "name": "温度(RED0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 66,
+      "type": "point",
+      "key": "RED0002_NOISE",
+      "name": "噪声(RED0002_NOISE)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 67,
+      "type": "point",
+      "key": "RED0003_VIB",
+      "name": "振动(RED0003_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 68,
+      "type": "point",
+      "key": "RED0003_TEMP",
+      "name": "温度(RED0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 69,
+      "type": "point",
+      "key": "RED0003_NOISE",
+      "name": "噪声(RED0003_NOISE)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 70,
+      "type": "point",
+      "key": "RED0004_VIB",
+      "name": "振动(RED0004_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 71,
+      "type": "point",
+      "key": "RED0004_TEMP",
+      "name": "温度(RED0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 72,
+      "type": "point",
+      "key": "RED0004_NOISE",
+      "name": "噪声(RED0004_NOISE)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 73,
+      "type": "point",
+      "key": "RED0005_VIB",
+      "name": "振动(RED0005_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 74,
+      "type": "point",
+      "key": "RED0005_TEMP",
+      "name": "温度(RED0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 75,
+      "type": "point",
+      "key": "RED0005_NOISE",
+      "name": "噪声(RED0005_NOISE)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 76,
+      "type": "point",
+      "key": "HEX0001_TEMP",
+      "name": "温度(HEX0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 77,
+      "type": "point",
+      "key": "HEX0001_PRESS",
+      "name": "压力(HEX0001_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 78,
+      "type": "point",
+      "key": "HEX0001_FLOW",
+      "name": "流量(HEX0001_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 79,
+      "type": "point",
+      "key": "HEX0002_TEMP",
+      "name": "温度(HEX0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 80,
+      "type": "point",
+      "key": "HEX0002_PRESS",
+      "name": "压力(HEX0002_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 81,
+      "type": "point",
+      "key": "HEX0002_FLOW",
+      "name": "流量(HEX0002_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 82,
+      "type": "point",
+      "key": "HEX0003_TEMP",
+      "name": "温度(HEX0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 83,
+      "type": "point",
+      "key": "HEX0003_PRESS",
+      "name": "压力(HEX0003_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 84,
+      "type": "point",
+      "key": "HEX0003_FLOW",
+      "name": "流量(HEX0003_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 85,
+      "type": "point",
+      "key": "HEX0004_TEMP",
+      "name": "温度(HEX0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 86,
+      "type": "point",
+      "key": "HEX0004_PRESS",
+      "name": "压力(HEX0004_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 87,
+      "type": "point",
+      "key": "HEX0004_FLOW",
+      "name": "流量(HEX0004_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 88,
+      "type": "point",
+      "key": "HEX0005_TEMP",
+      "name": "温度(HEX0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 89,
+      "type": "point",
+      "key": "HEX0005_PRESS",
+      "name": "压力(HEX0005_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 90,
+      "type": "point",
+      "key": "HEX0005_FLOW",
+      "name": "流量(HEX0005_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 91,
+      "type": "point",
+      "key": "BLR0001_TEMP",
+      "name": "温度(BLR0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 92,
+      "type": "point",
+      "key": "BLR0001_PRESS",
+      "name": "压力(BLR0001_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 93,
+      "type": "point",
+      "key": "BLR0001_LEVEL",
+      "name": "液位(BLR0001_LEVEL)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 94,
+      "type": "point",
+      "key": "BLR0002_TEMP",
+      "name": "温度(BLR0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 95,
+      "type": "point",
+      "key": "BLR0002_PRESS",
+      "name": "压力(BLR0002_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 96,
+      "type": "point",
+      "key": "BLR0002_LEVEL",
+      "name": "液位(BLR0002_LEVEL)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 97,
+      "type": "point",
+      "key": "BLR0003_TEMP",
+      "name": "温度(BLR0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 98,
+      "type": "point",
+      "key": "BLR0003_PRESS",
+      "name": "压力(BLR0003_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 99,
+      "type": "point",
+      "key": "BLR0003_LEVEL",
+      "name": "液位(BLR0003_LEVEL)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 100,
+      "type": "point",
+      "key": "BLR0004_TEMP",
+      "name": "温度(BLR0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 101,
+      "type": "point",
+      "key": "BLR0004_PRESS",
+      "name": "压力(BLR0004_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 102,
+      "type": "point",
+      "key": "BLR0004_LEVEL",
+      "name": "液位(BLR0004_LEVEL)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 103,
+      "type": "point",
+      "key": "BLR0005_TEMP",
+      "name": "温度(BLR0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 104,
+      "type": "point",
+      "key": "BLR0005_PRESS",
+      "name": "压力(BLR0005_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 105,
+      "type": "point",
+      "key": "BLR0005_LEVEL",
+      "name": "液位(BLR0005_LEVEL)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 106,
+      "type": "point",
+      "key": "AIR0001_PRESS",
+      "name": "压力(AIR0001_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 107,
+      "type": "point",
+      "key": "AIR0001_TEMP",
+      "name": "温度(AIR0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 108,
+      "type": "point",
+      "key": "AIR0001_POW",
+      "name": "功率(AIR0001_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 109,
+      "type": "point",
+      "key": "AIR0002_PRESS",
+      "name": "压力(AIR0002_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 110,
+      "type": "point",
+      "key": "AIR0002_TEMP",
+      "name": "温度(AIR0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 111,
+      "type": "point",
+      "key": "AIR0002_POW",
+      "name": "功率(AIR0002_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 112,
+      "type": "point",
+      "key": "AIR0003_PRESS",
+      "name": "压力(AIR0003_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 113,
+      "type": "point",
+      "key": "AIR0003_TEMP",
+      "name": "温度(AIR0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 114,
+      "type": "point",
+      "key": "AIR0003_POW",
+      "name": "功率(AIR0003_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 115,
+      "type": "point",
+      "key": "AIR0004_PRESS",
+      "name": "压力(AIR0004_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 116,
+      "type": "point",
+      "key": "AIR0004_TEMP",
+      "name": "温度(AIR0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 117,
+      "type": "point",
+      "key": "AIR0004_POW",
+      "name": "功率(AIR0004_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 118,
+      "type": "point",
+      "key": "AIR0005_PRESS",
+      "name": "压力(AIR0005_PRESS)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 119,
+      "type": "point",
+      "key": "AIR0005_TEMP",
+      "name": "温度(AIR0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 120,
+      "type": "point",
+      "key": "AIR0005_POW",
+      "name": "功率(AIR0005_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 121,
+      "type": "point",
+      "key": "CNV0001_RPM",
+      "name": "转速(CNV0001_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 122,
+      "type": "point",
+      "key": "CNV0001_CUR",
+      "name": "电流(CNV0001_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 123,
+      "type": "point",
+      "key": "CNV0001_VIB",
+      "name": "振动(CNV0001_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 124,
+      "type": "point",
+      "key": "CNV0002_RPM",
+      "name": "转速(CNV0002_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 125,
+      "type": "point",
+      "key": "CNV0002_CUR",
+      "name": "电流(CNV0002_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 126,
+      "type": "point",
+      "key": "CNV0002_VIB",
+      "name": "振动(CNV0002_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 127,
+      "type": "point",
+      "key": "CNV0003_RPM",
+      "name": "转速(CNV0003_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 128,
+      "type": "point",
+      "key": "CNV0003_CUR",
+      "name": "电流(CNV0003_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 129,
+      "type": "point",
+      "key": "CNV0003_VIB",
+      "name": "振动(CNV0003_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 130,
+      "type": "point",
+      "key": "CNV0004_RPM",
+      "name": "转速(CNV0004_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 131,
+      "type": "point",
+      "key": "CNV0004_CUR",
+      "name": "电流(CNV0004_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 132,
+      "type": "point",
+      "key": "CNV0004_VIB",
+      "name": "振动(CNV0004_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 133,
+      "type": "point",
+      "key": "CNV0005_RPM",
+      "name": "转速(CNV0005_RPM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 134,
+      "type": "point",
+      "key": "CNV0005_CUR",
+      "name": "电流(CNV0005_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 135,
+      "type": "point",
+      "key": "CNV0005_VIB",
+      "name": "振动(CNV0005_VIB)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 136,
+      "type": "point",
+      "key": "TRF0001_VOLT",
+      "name": "电压(TRF0001_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 137,
+      "type": "point",
+      "key": "TRF0001_CUR",
+      "name": "电流(TRF0001_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 138,
+      "type": "point",
+      "key": "TRF0001_TEMP",
+      "name": "温度(TRF0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 139,
+      "type": "point",
+      "key": "TRF0002_VOLT",
+      "name": "电压(TRF0002_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 140,
+      "type": "point",
+      "key": "TRF0002_CUR",
+      "name": "电流(TRF0002_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 141,
+      "type": "point",
+      "key": "TRF0002_TEMP",
+      "name": "温度(TRF0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 142,
+      "type": "point",
+      "key": "TRF0003_VOLT",
+      "name": "电压(TRF0003_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 143,
+      "type": "point",
+      "key": "TRF0003_CUR",
+      "name": "电流(TRF0003_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 144,
+      "type": "point",
+      "key": "TRF0003_TEMP",
+      "name": "温度(TRF0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 145,
+      "type": "point",
+      "key": "TRF0004_VOLT",
+      "name": "电压(TRF0004_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 146,
+      "type": "point",
+      "key": "TRF0004_CUR",
+      "name": "电流(TRF0004_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 147,
+      "type": "point",
+      "key": "TRF0004_TEMP",
+      "name": "温度(TRF0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 148,
+      "type": "point",
+      "key": "TRF0005_VOLT",
+      "name": "电压(TRF0005_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 149,
+      "type": "point",
+      "key": "TRF0005_CUR",
+      "name": "电流(TRF0005_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 150,
+      "type": "point",
+      "key": "TRF0005_TEMP",
+      "name": "温度(TRF0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 151,
+      "type": "point",
+      "key": "VFD0001_CUR",
+      "name": "电流(VFD0001_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 152,
+      "type": "point",
+      "key": "VFD0001_VOLT",
+      "name": "电压(VFD0001_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 153,
+      "type": "point",
+      "key": "VFD0001_POW",
+      "name": "功率(VFD0001_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 154,
+      "type": "point",
+      "key": "VFD0002_CUR",
+      "name": "电流(VFD0002_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 155,
+      "type": "point",
+      "key": "VFD0002_VOLT",
+      "name": "电压(VFD0002_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 156,
+      "type": "point",
+      "key": "VFD0002_POW",
+      "name": "功率(VFD0002_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 157,
+      "type": "point",
+      "key": "VFD0003_CUR",
+      "name": "电流(VFD0003_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 158,
+      "type": "point",
+      "key": "VFD0003_VOLT",
+      "name": "电压(VFD0003_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 159,
+      "type": "point",
+      "key": "VFD0003_POW",
+      "name": "功率(VFD0003_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 160,
+      "type": "point",
+      "key": "VFD0004_CUR",
+      "name": "电流(VFD0004_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 161,
+      "type": "point",
+      "key": "VFD0004_VOLT",
+      "name": "电压(VFD0004_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 162,
+      "type": "point",
+      "key": "VFD0004_POW",
+      "name": "功率(VFD0004_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 163,
+      "type": "point",
+      "key": "VFD0005_CUR",
+      "name": "电流(VFD0005_CUR)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 164,
+      "type": "point",
+      "key": "VFD0005_VOLT",
+      "name": "电压(VFD0005_VOLT)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 165,
+      "type": "point",
+      "key": "VFD0005_POW",
+      "name": "功率(VFD0005_POW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 166,
+      "type": "point",
+      "key": "CTW0001_TEMP",
+      "name": "温度(CTW0001_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 167,
+      "type": "point",
+      "key": "CTW0001_HUM",
+      "name": "湿度(CTW0001_HUM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 168,
+      "type": "point",
+      "key": "CTW0001_FLOW",
+      "name": "流量(CTW0001_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 169,
+      "type": "point",
+      "key": "CTW0002_TEMP",
+      "name": "温度(CTW0002_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 170,
+      "type": "point",
+      "key": "CTW0002_HUM",
+      "name": "湿度(CTW0002_HUM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 171,
+      "type": "point",
+      "key": "CTW0002_FLOW",
+      "name": "流量(CTW0002_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 172,
+      "type": "point",
+      "key": "CTW0003_TEMP",
+      "name": "温度(CTW0003_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 173,
+      "type": "point",
+      "key": "CTW0003_HUM",
+      "name": "湿度(CTW0003_HUM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 174,
+      "type": "point",
+      "key": "CTW0003_FLOW",
+      "name": "流量(CTW0003_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 175,
+      "type": "point",
+      "key": "CTW0004_TEMP",
+      "name": "温度(CTW0004_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 176,
+      "type": "point",
+      "key": "CTW0004_HUM",
+      "name": "湿度(CTW0004_HUM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 177,
+      "type": "point",
+      "key": "CTW0004_FLOW",
+      "name": "流量(CTW0004_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 178,
+      "type": "point",
+      "key": "CTW0005_TEMP",
+      "name": "温度(CTW0005_TEMP)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 179,
+      "type": "point",
+      "key": "CTW0005_HUM",
+      "name": "湿度(CTW0005_HUM)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 180,
+      "type": "point",
+      "key": "CTW0005_FLOW",
+      "name": "流量(CTW0005_FLOW)",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 181,
+      "type": "report",
+      "key": "RPT_OEE_DAILY",
+      "name": "OEE 日报",
+      "owner": "生产运营部"
+    },
+    {
+      "id": 182,
+      "type": "report",
+      "key": "RPT_QUALITY_WEEKLY",
+      "name": "质量周报",
+      "owner": "质量管理部"
+    },
+    {
+      "id": 183,
+      "type": "report",
+      "key": "RPT_ENERGY_MONTHLY",
+      "name": "能耗月报",
+      "owner": "能源管理部"
+    },
+    {
+      "id": 184,
+      "type": "report",
+      "key": "RPT_ALARM_SUMMARY",
+      "name": "告警汇总看板",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 185,
+      "type": "report",
+      "key": "RPT_MAINT_PLAN",
+      "name": "检修计划表",
+      "owner": "设备管理部"
+    },
+    {
+      "id": 186,
+      "type": "task",
+      "key": "TASK_FEATURE_DAILY",
+      "name": "日特征计算",
+      "owner": "数据组"
+    },
+    {
+      "id": 187,
+      "type": "task",
+      "key": "TASK_DRIFT_CHECK",
+      "name": "特征漂移检测",
+      "owner": "数据组"
+    },
+    {
+      "id": 188,
+      "type": "task",
+      "key": "TASK_HEALTH_SCORE",
+      "name": "健康度评分",
+      "owner": "算法组"
+    },
+    {
+      "id": 189,
+      "type": "api",
+      "key": "API_KPI_QUERY",
+      "name": "KPI 查询接口",
+      "owner": "平台组"
+    },
+    {
+      "id": 190,
+      "type": "api",
+      "key": "API_ASSET_CATALOG",
+      "name": "资产目录接口",
+      "owner": "平台组"
+    },
+    {
+      "id": 191,
+      "type": "dataset",
+      "key": "DS_CLEAN_TS",
+      "name": "清洗后时序宽表",
+      "owner": "数据组"
+    }
+  ],
+  "edges": [
+    {
+      "source": 1,
+      "target": 187,
+      "field": "FAN0001_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 1,
+      "target": 188,
+      "field": "FAN0001_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 1,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 2,
+      "target": 181,
+      "field": "FAN0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 2,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 3,
+      "target": 181,
+      "field": "FAN0001_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 3,
+      "target": 184,
+      "field": "FAN0001_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 3,
+      "target": 190,
+      "field": "FAN0001_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 3,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 4,
+      "target": 188,
+      "field": "FAN0002_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 4,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 5,
+      "target": 186,
+      "field": "FAN0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 5,
+      "target": 189,
+      "field": "FAN0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 5,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 6,
+      "target": 181,
+      "field": "FAN0002_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 6,
+      "target": 187,
+      "field": "FAN0002_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 6,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 7,
+      "target": 184,
+      "field": "FAN0003_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 7,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 8,
+      "target": 182,
+      "field": "FAN0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 8,
+      "target": 185,
+      "field": "FAN0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 8,
+      "target": 187,
+      "field": "FAN0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 8,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 9,
+      "target": 186,
+      "field": "FAN0003_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 9,
+      "target": 187,
+      "field": "FAN0003_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 9,
+      "target": 189,
+      "field": "FAN0003_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 9,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 10,
+      "target": 184,
+      "field": "FAN0004_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 10,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 11,
+      "target": 181,
+      "field": "FAN0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 11,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 12,
+      "target": 183,
+      "field": "FAN0004_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 12,
+      "target": 190,
+      "field": "FAN0004_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 12,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 13,
+      "target": 190,
+      "field": "FAN0005_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 13,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 14,
+      "target": 182,
+      "field": "FAN0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 14,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 15,
+      "target": 183,
+      "field": "FAN0005_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 15,
+      "target": 188,
+      "field": "FAN0005_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 15,
+      "target": 189,
+      "field": "FAN0005_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 15,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 16,
+      "target": 182,
+      "field": "PMP0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 16,
+      "target": 183,
+      "field": "PMP0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 16,
+      "target": 185,
+      "field": "PMP0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 16,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 17,
+      "target": 185,
+      "field": "PMP0001_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 17,
+      "target": 188,
+      "field": "PMP0001_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 17,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 18,
+      "target": 183,
+      "field": "PMP0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 18,
+      "target": 190,
+      "field": "PMP0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 18,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 19,
+      "target": 182,
+      "field": "PMP0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 19,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 20,
+      "target": 182,
+      "field": "PMP0002_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 20,
+      "target": 183,
+      "field": "PMP0002_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 20,
+      "target": 187,
+      "field": "PMP0002_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 20,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 21,
+      "target": 184,
+      "field": "PMP0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 21,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 22,
+      "target": 182,
+      "field": "PMP0003_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 22,
+      "target": 187,
+      "field": "PMP0003_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 22,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 23,
+      "target": 182,
+      "field": "PMP0003_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 23,
+      "target": 183,
+      "field": "PMP0003_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 23,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 24,
+      "target": 184,
+      "field": "PMP0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 24,
+      "target": 185,
+      "field": "PMP0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 24,
+      "target": 187,
+      "field": "PMP0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 24,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 25,
+      "target": 182,
+      "field": "PMP0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 25,
+      "target": 183,
+      "field": "PMP0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 25,
+      "target": 187,
+      "field": "PMP0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 25,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 26,
+      "target": 185,
+      "field": "PMP0004_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 26,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 27,
+      "target": 190,
+      "field": "PMP0004_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 27,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 28,
+      "target": 181,
+      "field": "PMP0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 28,
+      "target": 183,
+      "field": "PMP0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 28,
+      "target": 187,
+      "field": "PMP0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 28,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 29,
+      "target": 184,
+      "field": "PMP0005_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 29,
+      "target": 187,
+      "field": "PMP0005_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 29,
+      "target": 188,
+      "field": "PMP0005_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 29,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 30,
+      "target": 181,
+      "field": "PMP0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 30,
+      "target": 182,
+      "field": "PMP0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 30,
+      "target": 183,
+      "field": "PMP0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 30,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 31,
+      "target": 186,
+      "field": "CMP0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 31,
+      "target": 188,
+      "field": "CMP0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 31,
+      "target": 189,
+      "field": "CMP0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 31,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 32,
+      "target": 181,
+      "field": "CMP0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 32,
+      "target": 190,
+      "field": "CMP0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 32,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 33,
+      "target": 188,
+      "field": "CMP0001_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 33,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 34,
+      "target": 183,
+      "field": "CMP0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 34,
+      "target": 187,
+      "field": "CMP0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 34,
+      "target": 189,
+      "field": "CMP0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 34,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 35,
+      "target": 187,
+      "field": "CMP0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 35,
+      "target": 189,
+      "field": "CMP0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 35,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 36,
+      "target": 189,
+      "field": "CMP0002_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 36,
+      "target": 190,
+      "field": "CMP0002_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 36,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 37,
+      "target": 185,
+      "field": "CMP0003_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 37,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 38,
+      "target": 182,
+      "field": "CMP0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 38,
+      "target": 187,
+      "field": "CMP0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 38,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 39,
+      "target": 186,
+      "field": "CMP0003_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 39,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 40,
+      "target": 185,
+      "field": "CMP0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 40,
+      "target": 190,
+      "field": "CMP0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 40,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 41,
+      "target": 184,
+      "field": "CMP0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 41,
+      "target": 186,
+      "field": "CMP0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 41,
+      "target": 188,
+      "field": "CMP0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 41,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 42,
+      "target": 182,
+      "field": "CMP0004_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 42,
+      "target": 184,
+      "field": "CMP0004_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 42,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 43,
+      "target": 184,
+      "field": "CMP0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 43,
+      "target": 187,
+      "field": "CMP0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 43,
+      "target": 189,
+      "field": "CMP0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 43,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 44,
+      "target": 186,
+      "field": "CMP0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 44,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 45,
+      "target": 181,
+      "field": "CMP0005_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 45,
+      "target": 185,
+      "field": "CMP0005_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 45,
+      "target": 187,
+      "field": "CMP0005_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 45,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 46,
+      "target": 185,
+      "field": "MTR0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 46,
+      "target": 186,
+      "field": "MTR0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 46,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 47,
+      "target": 187,
+      "field": "MTR0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 47,
+      "target": 189,
+      "field": "MTR0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 47,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 48,
+      "target": 182,
+      "field": "MTR0001_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 48,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 49,
+      "target": 183,
+      "field": "MTR0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 49,
+      "target": 187,
+      "field": "MTR0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 49,
+      "target": 189,
+      "field": "MTR0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 49,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 50,
+      "target": 184,
+      "field": "MTR0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 50,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 51,
+      "target": 183,
+      "field": "MTR0002_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 51,
+      "target": 189,
+      "field": "MTR0002_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 51,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 52,
+      "target": 184,
+      "field": "MTR0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 52,
+      "target": 190,
+      "field": "MTR0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 52,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 53,
+      "target": 186,
+      "field": "MTR0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 53,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 54,
+      "target": 183,
+      "field": "MTR0003_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 54,
+      "target": 185,
+      "field": "MTR0003_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 54,
+      "target": 189,
+      "field": "MTR0003_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 54,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 55,
+      "target": 184,
+      "field": "MTR0004_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 55,
+      "target": 185,
+      "field": "MTR0004_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 55,
+      "target": 188,
+      "field": "MTR0004_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 55,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 56,
+      "target": 182,
+      "field": "MTR0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 56,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 57,
+      "target": 188,
+      "field": "MTR0004_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 57,
+      "target": 190,
+      "field": "MTR0004_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 57,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 58,
+      "target": 183,
+      "field": "MTR0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 58,
+      "target": 189,
+      "field": "MTR0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 58,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 59,
+      "target": 182,
+      "field": "MTR0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 59,
+      "target": 190,
+      "field": "MTR0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 59,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 60,
+      "target": 186,
+      "field": "MTR0005_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 60,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 61,
+      "target": 183,
+      "field": "RED0001_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 61,
+      "target": 188,
+      "field": "RED0001_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 61,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 62,
+      "target": 190,
+      "field": "RED0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 62,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 63,
+      "target": 181,
+      "field": "RED0001_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 63,
+      "target": 189,
+      "field": "RED0001_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 63,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 64,
+      "target": 186,
+      "field": "RED0002_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 64,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 65,
+      "target": 184,
+      "field": "RED0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 65,
+      "target": 185,
+      "field": "RED0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 65,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 66,
+      "target": 183,
+      "field": "RED0002_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 66,
+      "target": 187,
+      "field": "RED0002_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 66,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 67,
+      "target": 181,
+      "field": "RED0003_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 67,
+      "target": 184,
+      "field": "RED0003_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 67,
+      "target": 188,
+      "field": "RED0003_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 67,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 68,
+      "target": 186,
+      "field": "RED0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 68,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 69,
+      "target": 183,
+      "field": "RED0003_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 69,
+      "target": 186,
+      "field": "RED0003_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 69,
+      "target": 187,
+      "field": "RED0003_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 69,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 70,
+      "target": 185,
+      "field": "RED0004_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 70,
+      "target": 188,
+      "field": "RED0004_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 70,
+      "target": 189,
+      "field": "RED0004_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 70,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 71,
+      "target": 187,
+      "field": "RED0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 71,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 72,
+      "target": 186,
+      "field": "RED0004_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 72,
+      "target": 189,
+      "field": "RED0004_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 72,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 73,
+      "target": 185,
+      "field": "RED0005_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 73,
+      "target": 188,
+      "field": "RED0005_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 73,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 74,
+      "target": 190,
+      "field": "RED0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 74,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 75,
+      "target": 185,
+      "field": "RED0005_NOISE",
+      "relation": "read"
+    },
+    {
+      "source": 75,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 76,
+      "target": 182,
+      "field": "HEX0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 76,
+      "target": 185,
+      "field": "HEX0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 76,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 77,
+      "target": 184,
+      "field": "HEX0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 77,
+      "target": 187,
+      "field": "HEX0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 77,
+      "target": 188,
+      "field": "HEX0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 77,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 78,
+      "target": 181,
+      "field": "HEX0001_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 78,
+      "target": 190,
+      "field": "HEX0001_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 78,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 79,
+      "target": 186,
+      "field": "HEX0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 79,
+      "target": 188,
+      "field": "HEX0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 79,
+      "target": 190,
+      "field": "HEX0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 79,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 80,
+      "target": 186,
+      "field": "HEX0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 80,
+      "target": 190,
+      "field": "HEX0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 80,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 81,
+      "target": 184,
+      "field": "HEX0002_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 81,
+      "target": 186,
+      "field": "HEX0002_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 81,
+      "target": 189,
+      "field": "HEX0002_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 81,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 82,
+      "target": 184,
+      "field": "HEX0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 82,
+      "target": 188,
+      "field": "HEX0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 82,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 83,
+      "target": 182,
+      "field": "HEX0003_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 83,
+      "target": 183,
+      "field": "HEX0003_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 83,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 84,
+      "target": 181,
+      "field": "HEX0003_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 84,
+      "target": 185,
+      "field": "HEX0003_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 84,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 85,
+      "target": 184,
+      "field": "HEX0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 85,
+      "target": 185,
+      "field": "HEX0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 85,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 86,
+      "target": 183,
+      "field": "HEX0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 86,
+      "target": 184,
+      "field": "HEX0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 86,
+      "target": 188,
+      "field": "HEX0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 86,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 87,
+      "target": 183,
+      "field": "HEX0004_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 87,
+      "target": 189,
+      "field": "HEX0004_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 87,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 88,
+      "target": 181,
+      "field": "HEX0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 88,
+      "target": 182,
+      "field": "HEX0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 88,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 89,
+      "target": 181,
+      "field": "HEX0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 89,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 90,
+      "target": 188,
+      "field": "HEX0005_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 90,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 91,
+      "target": 189,
+      "field": "BLR0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 91,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 92,
+      "target": 188,
+      "field": "BLR0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 92,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 93,
+      "target": 186,
+      "field": "BLR0001_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 93,
+      "target": 187,
+      "field": "BLR0001_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 93,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 94,
+      "target": 188,
+      "field": "BLR0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 94,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 95,
+      "target": 181,
+      "field": "BLR0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 95,
+      "target": 187,
+      "field": "BLR0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 95,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 96,
+      "target": 181,
+      "field": "BLR0002_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 96,
+      "target": 182,
+      "field": "BLR0002_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 96,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 97,
+      "target": 183,
+      "field": "BLR0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 97,
+      "target": 184,
+      "field": "BLR0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 97,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 98,
+      "target": 184,
+      "field": "BLR0003_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 98,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 99,
+      "target": 183,
+      "field": "BLR0003_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 99,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 100,
+      "target": 183,
+      "field": "BLR0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 100,
+      "target": 186,
+      "field": "BLR0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 100,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 101,
+      "target": 182,
+      "field": "BLR0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 101,
+      "target": 184,
+      "field": "BLR0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 101,
+      "target": 189,
+      "field": "BLR0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 101,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 102,
+      "target": 185,
+      "field": "BLR0004_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 102,
+      "target": 188,
+      "field": "BLR0004_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 102,
+      "target": 189,
+      "field": "BLR0004_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 102,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 103,
+      "target": 181,
+      "field": "BLR0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 103,
+      "target": 187,
+      "field": "BLR0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 103,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 104,
+      "target": 185,
+      "field": "BLR0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 104,
+      "target": 186,
+      "field": "BLR0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 104,
+      "target": 188,
+      "field": "BLR0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 104,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 105,
+      "target": 190,
+      "field": "BLR0005_LEVEL",
+      "relation": "read"
+    },
+    {
+      "source": 105,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 106,
+      "target": 181,
+      "field": "AIR0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 106,
+      "target": 190,
+      "field": "AIR0001_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 106,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 107,
+      "target": 182,
+      "field": "AIR0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 107,
+      "target": 184,
+      "field": "AIR0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 107,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 108,
+      "target": 184,
+      "field": "AIR0001_POW",
+      "relation": "read"
+    },
+    {
+      "source": 108,
+      "target": 185,
+      "field": "AIR0001_POW",
+      "relation": "read"
+    },
+    {
+      "source": 108,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 109,
+      "target": 184,
+      "field": "AIR0002_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 109,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 110,
+      "target": 185,
+      "field": "AIR0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 110,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 111,
+      "target": 184,
+      "field": "AIR0002_POW",
+      "relation": "read"
+    },
+    {
+      "source": 111,
+      "target": 190,
+      "field": "AIR0002_POW",
+      "relation": "read"
+    },
+    {
+      "source": 111,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 112,
+      "target": 185,
+      "field": "AIR0003_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 112,
+      "target": 190,
+      "field": "AIR0003_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 112,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 113,
+      "target": 183,
+      "field": "AIR0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 113,
+      "target": 188,
+      "field": "AIR0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 113,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 114,
+      "target": 182,
+      "field": "AIR0003_POW",
+      "relation": "read"
+    },
+    {
+      "source": 114,
+      "target": 183,
+      "field": "AIR0003_POW",
+      "relation": "read"
+    },
+    {
+      "source": 114,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 115,
+      "target": 181,
+      "field": "AIR0004_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 115,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 116,
+      "target": 188,
+      "field": "AIR0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 116,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 117,
+      "target": 181,
+      "field": "AIR0004_POW",
+      "relation": "read"
+    },
+    {
+      "source": 117,
+      "target": 183,
+      "field": "AIR0004_POW",
+      "relation": "read"
+    },
+    {
+      "source": 117,
+      "target": 186,
+      "field": "AIR0004_POW",
+      "relation": "read"
+    },
+    {
+      "source": 117,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 118,
+      "target": 190,
+      "field": "AIR0005_PRESS",
+      "relation": "read"
+    },
+    {
+      "source": 118,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 119,
+      "target": 190,
+      "field": "AIR0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 119,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 120,
+      "target": 182,
+      "field": "AIR0005_POW",
+      "relation": "read"
+    },
+    {
+      "source": 120,
+      "target": 183,
+      "field": "AIR0005_POW",
+      "relation": "read"
+    },
+    {
+      "source": 120,
+      "target": 189,
+      "field": "AIR0005_POW",
+      "relation": "read"
+    },
+    {
+      "source": 120,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 121,
+      "target": 186,
+      "field": "CNV0001_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 121,
+      "target": 189,
+      "field": "CNV0001_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 121,
+      "target": 190,
+      "field": "CNV0001_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 121,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 122,
+      "target": 183,
+      "field": "CNV0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 122,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 123,
+      "target": 188,
+      "field": "CNV0001_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 123,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 124,
+      "target": 184,
+      "field": "CNV0002_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 124,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 125,
+      "target": 182,
+      "field": "CNV0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 125,
+      "target": 189,
+      "field": "CNV0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 125,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 126,
+      "target": 183,
+      "field": "CNV0002_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 126,
+      "target": 186,
+      "field": "CNV0002_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 126,
+      "target": 187,
+      "field": "CNV0002_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 126,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 127,
+      "target": 187,
+      "field": "CNV0003_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 127,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 128,
+      "target": 182,
+      "field": "CNV0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 128,
+      "target": 185,
+      "field": "CNV0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 128,
+      "target": 189,
+      "field": "CNV0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 128,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 129,
+      "target": 181,
+      "field": "CNV0003_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 129,
+      "target": 183,
+      "field": "CNV0003_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 129,
+      "target": 188,
+      "field": "CNV0003_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 129,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 130,
+      "target": 184,
+      "field": "CNV0004_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 130,
+      "target": 185,
+      "field": "CNV0004_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 130,
+      "target": 190,
+      "field": "CNV0004_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 130,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 131,
+      "target": 187,
+      "field": "CNV0004_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 131,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 132,
+      "target": 190,
+      "field": "CNV0004_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 132,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 133,
+      "target": 182,
+      "field": "CNV0005_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 133,
+      "target": 186,
+      "field": "CNV0005_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 133,
+      "target": 189,
+      "field": "CNV0005_RPM",
+      "relation": "read"
+    },
+    {
+      "source": 133,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 134,
+      "target": 183,
+      "field": "CNV0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 134,
+      "target": 186,
+      "field": "CNV0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 134,
+      "target": 188,
+      "field": "CNV0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 134,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 135,
+      "target": 188,
+      "field": "CNV0005_VIB",
+      "relation": "read"
+    },
+    {
+      "source": 135,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 136,
+      "target": 181,
+      "field": "TRF0001_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 136,
+      "target": 182,
+      "field": "TRF0001_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 136,
+      "target": 185,
+      "field": "TRF0001_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 136,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 137,
+      "target": 185,
+      "field": "TRF0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 137,
+      "target": 187,
+      "field": "TRF0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 137,
+      "target": 190,
+      "field": "TRF0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 137,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 138,
+      "target": 188,
+      "field": "TRF0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 138,
+      "target": 190,
+      "field": "TRF0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 138,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 139,
+      "target": 183,
+      "field": "TRF0002_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 139,
+      "target": 184,
+      "field": "TRF0002_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 139,
+      "target": 185,
+      "field": "TRF0002_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 139,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 140,
+      "target": 183,
+      "field": "TRF0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 140,
+      "target": 186,
+      "field": "TRF0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 140,
+      "target": 188,
+      "field": "TRF0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 140,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 141,
+      "target": 181,
+      "field": "TRF0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 141,
+      "target": 185,
+      "field": "TRF0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 141,
+      "target": 190,
+      "field": "TRF0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 141,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 142,
+      "target": 182,
+      "field": "TRF0003_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 142,
+      "target": 190,
+      "field": "TRF0003_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 142,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 143,
+      "target": 182,
+      "field": "TRF0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 143,
+      "target": 183,
+      "field": "TRF0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 143,
+      "target": 184,
+      "field": "TRF0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 143,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 144,
+      "target": 187,
+      "field": "TRF0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 144,
+      "target": 188,
+      "field": "TRF0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 144,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 145,
+      "target": 189,
+      "field": "TRF0004_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 145,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 146,
+      "target": 185,
+      "field": "TRF0004_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 146,
+      "target": 189,
+      "field": "TRF0004_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 146,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 147,
+      "target": 186,
+      "field": "TRF0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 147,
+      "target": 188,
+      "field": "TRF0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 147,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 148,
+      "target": 181,
+      "field": "TRF0005_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 148,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 149,
+      "target": 186,
+      "field": "TRF0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 149,
+      "target": 190,
+      "field": "TRF0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 149,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 150,
+      "target": 185,
+      "field": "TRF0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 150,
+      "target": 187,
+      "field": "TRF0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 150,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 151,
+      "target": 182,
+      "field": "VFD0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 151,
+      "target": 184,
+      "field": "VFD0001_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 151,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 152,
+      "target": 184,
+      "field": "VFD0001_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 152,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 153,
+      "target": 182,
+      "field": "VFD0001_POW",
+      "relation": "read"
+    },
+    {
+      "source": 153,
+      "target": 190,
+      "field": "VFD0001_POW",
+      "relation": "read"
+    },
+    {
+      "source": 153,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 154,
+      "target": 190,
+      "field": "VFD0002_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 154,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 155,
+      "target": 187,
+      "field": "VFD0002_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 155,
+      "target": 188,
+      "field": "VFD0002_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 155,
+      "target": 189,
+      "field": "VFD0002_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 155,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 156,
+      "target": 188,
+      "field": "VFD0002_POW",
+      "relation": "read"
+    },
+    {
+      "source": 156,
+      "target": 189,
+      "field": "VFD0002_POW",
+      "relation": "read"
+    },
+    {
+      "source": 156,
+      "target": 190,
+      "field": "VFD0002_POW",
+      "relation": "read"
+    },
+    {
+      "source": 156,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 157,
+      "target": 183,
+      "field": "VFD0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 157,
+      "target": 185,
+      "field": "VFD0003_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 157,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 158,
+      "target": 181,
+      "field": "VFD0003_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 158,
+      "target": 188,
+      "field": "VFD0003_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 158,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 159,
+      "target": 183,
+      "field": "VFD0003_POW",
+      "relation": "read"
+    },
+    {
+      "source": 159,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 160,
+      "target": 185,
+      "field": "VFD0004_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 160,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 161,
+      "target": 182,
+      "field": "VFD0004_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 161,
+      "target": 187,
+      "field": "VFD0004_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 161,
+      "target": 189,
+      "field": "VFD0004_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 161,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 162,
+      "target": 182,
+      "field": "VFD0004_POW",
+      "relation": "read"
+    },
+    {
+      "source": 162,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 163,
+      "target": 181,
+      "field": "VFD0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 163,
+      "target": 188,
+      "field": "VFD0005_CUR",
+      "relation": "read"
+    },
+    {
+      "source": 163,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 164,
+      "target": 186,
+      "field": "VFD0005_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 164,
+      "target": 189,
+      "field": "VFD0005_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 164,
+      "target": 190,
+      "field": "VFD0005_VOLT",
+      "relation": "read"
+    },
+    {
+      "source": 164,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 165,
+      "target": 187,
+      "field": "VFD0005_POW",
+      "relation": "read"
+    },
+    {
+      "source": 165,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 166,
+      "target": 183,
+      "field": "CTW0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 166,
+      "target": 187,
+      "field": "CTW0001_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 166,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 167,
+      "target": 182,
+      "field": "CTW0001_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 167,
+      "target": 186,
+      "field": "CTW0001_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 167,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 168,
+      "target": 187,
+      "field": "CTW0001_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 168,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 169,
+      "target": 183,
+      "field": "CTW0002_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 169,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 170,
+      "target": 182,
+      "field": "CTW0002_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 170,
+      "target": 190,
+      "field": "CTW0002_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 170,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 171,
+      "target": 182,
+      "field": "CTW0002_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 171,
+      "target": 190,
+      "field": "CTW0002_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 171,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 172,
+      "target": 185,
+      "field": "CTW0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 172,
+      "target": 187,
+      "field": "CTW0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 172,
+      "target": 189,
+      "field": "CTW0003_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 172,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 173,
+      "target": 181,
+      "field": "CTW0003_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 173,
+      "target": 185,
+      "field": "CTW0003_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 173,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 174,
+      "target": 186,
+      "field": "CTW0003_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 174,
+      "target": 189,
+      "field": "CTW0003_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 174,
+      "target": 190,
+      "field": "CTW0003_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 174,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 175,
+      "target": 181,
+      "field": "CTW0004_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 175,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 176,
+      "target": 185,
+      "field": "CTW0004_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 176,
+      "target": 187,
+      "field": "CTW0004_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 176,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 177,
+      "target": 187,
+      "field": "CTW0004_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 177,
+      "target": 188,
+      "field": "CTW0004_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 177,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 178,
+      "target": 185,
+      "field": "CTW0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 178,
+      "target": 187,
+      "field": "CTW0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 178,
+      "target": 188,
+      "field": "CTW0005_TEMP",
+      "relation": "read"
+    },
+    {
+      "source": 178,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 179,
+      "target": 186,
+      "field": "CTW0005_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 179,
+      "target": 187,
+      "field": "CTW0005_HUM",
+      "relation": "read"
+    },
+    {
+      "source": 179,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 180,
+      "target": 184,
+      "field": "CTW0005_FLOW",
+      "relation": "read"
+    },
+    {
+      "source": 180,
+      "target": 191,
+      "field": null,
+      "relation": "read"
+    },
+    {
+      "source": 191,
+      "target": 181,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 182,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 183,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 184,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 185,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 186,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 187,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 188,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 189,
+      "field": null,
+      "relation": "aggregate"
+    },
+    {
+      "source": 191,
+      "target": 190,
+      "field": null,
+      "relation": "aggregate"
+    }
+  ],
+  "total": 191,
+  "returned": 191,
+  "truncated": false
+}

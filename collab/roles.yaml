@@ -115,6 +115,7 @@ roles:
       - tests/test_lineage.py
       - tests/test_lineage_validation.py
       - docs/adr/ADR-004-lineage-bfs.md
+      - docs/adr/evidence/**
     skills: 图遍历 / BFS / 前端 SVG 渲染 / 性能调优
 
   - code: C1
