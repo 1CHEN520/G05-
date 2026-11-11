@@ -67,6 +67,7 @@ roles:
       - tests/test_logging_contract.py
       - tests/test_openapi_contract.py
       - tests/test_schema.py
+      - tests/test_cli.py
       - docs/团队角色清单.xlsx
       - data/archive/.gitkeep
       - data/db/.gitkeep
