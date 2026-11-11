@@ -1,7 +1,7 @@
 """审计日志表（AuditLog）—— append-only，不可篡改。
 
 不可篡改的两道防线：
-1. 应用层：只提供 ``append()``，不提供 update/delete
+1. 应用层：只提供 ``record()``，不提供 update/delete
 2. 数据库层：SQLite 触发器 ``trg_audit_no_update`` / ``trg_audit_no_delete`` 直接 RAISE(ABORT)
 
 评分红线："密码明文/审计可改 = 该维度 0 分"。
@@ -9,13 +9,14 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, Index, Integer, String, Text
+from sqlalchemy import Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from g05.models.base import Base, utcnow
+from g05.models.base import Base, UTCDateTime, utcnow
 
 
 class AuditLog(Base):
@@ -41,14 +42,17 @@ class AuditLog(Base):
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     trace_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
 
+    # 一律 UTC 存取（复用 base.UTCDateTime，避免各表时间语义不一致）
     changed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=utcnow, index=True
+        UTCDateTime, nullable=False, default=utcnow, index=True
     )
 
     __table_args__ = (
         # 审计查询主路径：按表 + 时间倒序
         Index("ix_audit_table_time", "table_name", "changed_at"),
         Index("ix_audit_operator_time", "operator", "changed_at"),
+        # 时间线主路径：按业务键 + 时间正序
+        Index("ix_audit_business_time", "business_key", "changed_at"),
     )
 
     @classmethod
@@ -66,7 +70,6 @@ class AuditLog(Base):
         trace_id: str | None = None,
     ) -> AuditLog:
         """构造一条审计记录（尚未入库）。"""
-        import json
 
         def dump(obj: dict[str, Any] | None) -> str | None:
             if obj is None:
@@ -84,3 +87,19 @@ class AuditLog(Base):
             reason=reason,
             trace_id=trace_id,
         )
+
+    @staticmethod
+    def diff(old: dict[str, Any] | None, new: dict[str, Any] | None) -> list[dict[str, Any]]:
+        """比较两个快照，返回发生变化的字段列表（用于时间线视图）。
+
+        只返回"真的变了"的字段，避免把整个对象塞进前端导致列表页卡顿。
+        """
+        old = old or {}
+        new = new or {}
+        changed: list[dict[str, Any]] = []
+        for key in sorted(set(old) | set(new)):
+            before = old.get(key)
+            after = new.get(key)
+            if before != after:
+                changed.append({"field": key, "old": before, "new": after})
+        return changed

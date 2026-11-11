@@ -225,6 +225,10 @@ grep '"operator":"zhangsan"' logs/app.jsonl
 
 **现象**：`/healthz` 返回 `foreign_keys: false`
 
+**怎么判断**：
+1. `curl -s http://127.0.0.1:8000/healthz` 确认 `foreign_keys: false` 且其余项正常
+2. `sqlite3 data/db/g05.db "PRAGMA foreign_keys;"` —— 返回 `0` 确认是连接层 PRAGMA 没生效，不是误报
+
 **原因**：SQLite 默认关闭外键，`PRAGMA` 未生效
 
 **处理**：
@@ -235,6 +239,11 @@ grep '"operator":"zhangsan"' logs/app.jsonl
 ### 5.2 `ok: false` — WAL 未生效
 
 **现象**：`journal_mode` 不是 `wal`
+
+**怎么判断**：
+1. `sqlite3 data/db/g05.db "PRAGMA journal_mode;"` —— 返回非 `wal` 确认问题
+2. `netstat -ano | findstr :8000` 之外再查有没有别的进程连着这个 .db（WAL 会被以非 WAL 模式打开的旧连接压回去）
+3. 确认数据库文件不在网络盘上：`net use` 看映射盘符
 
 **原因**：数据库文件被其他进程以 `DELETE` 模式打开；或文件系统不支持（网络盘）
 
@@ -247,6 +256,11 @@ sqlite3 data/db/g05.db "PRAGMA journal_mode=WAL;"
 ### 5.3 `database is locked`
 
 **现象**：写入报 `sqlite3.OperationalError: database is locked`
+
+**怎么判断**：
+1. `grep -c 'database is locked' logs/app.jsonl` 确认日志里确有此错误
+2. `netstat -ano | findstr :8000` + `tasklist | findstr python` 找是否有残留服务进程（上次没关的服务是头号嫌疑）
+3. `sqlite3 data/db/g05.db "PRAGMA wal_checkpoint(TRUNCATE);"` 能正常执行 → 说明锁已释放，问题在并发时序；执行不了 → 还有进程持有写锁
 
 **原因**：并发写超时
 
@@ -272,6 +286,11 @@ sqlite3 data/db/g05.db "PRAGMA journal_mode=WAL;"
 ### 5.5 血缘查询返回空
 
 **现象**：`/api/lineage/impact` 返回 `total: 0`
+
+**怎么判断**：
+1. `curl -s http://127.0.0.1:8000/api/lineage/graph | python -m json.tool | head -20` —— 看 graph 里有没有这个节点（节点都没有 vs 节点在边不在，处理完全不同）
+2. `sqlite3 data/db/g05.db "SELECT * FROM lineage_node WHERE node_key='FAN0001_VIB';"` —— 确认节点已注册
+3. `sqlite3 data/db/g05.db "SELECT * FROM lineage_edge WHERE upstream_key='FAN0001_VIB';"` —— 确认边是否存在
 
 **原因**：该测点没有注册血缘边
 
@@ -300,6 +319,11 @@ curl -X POST http://127.0.0.1:8000/api/lineage/edges \
 ### 5.7 数据库文件损坏
 
 **现象**：`PRAGMA integrity_check` 不为 `ok`
+
+**怎么判断**：
+1. `sqlite3 data/db/g05.db "PRAGMA integrity_check;"` —— 输出不是 `ok` 即损坏；输出 `ok` 则不是库损坏，回 §5.1–5.3 排查
+2. `ls -lh data/db/` —— 看 `-wal`/`-shm` 文件是否异常大（WAL 没做检查点）
+3. `grep -c ERROR logs/error.jsonl | tail -1` —— 排查是不是磁盘满导致的写坏
 
 **处理**：
 ```bash

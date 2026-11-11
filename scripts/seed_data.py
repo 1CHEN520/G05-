@@ -5,6 +5,8 @@
     python scripts/seed_data.py              # 灌入演示数据
     python scripts/seed_data.py --reset      # 清空业务表后重灌
     python scripts/seed_data.py --excel-only # 只生成 Excel 样例，不写库
+    python scripts/seed_data.py --excel-only --per-type 2000
+                                             # 生成 2.4 万行设备的压测样例
 """
 
 from __future__ import annotations
@@ -119,11 +121,17 @@ def build_excel(path: Path, device_rows: list[dict], point_rows: list[dict]) -> 
     log_event(log, "excel.generated", path=str(path), devices=len(device_rows), points=len(point_rows))
 
 
-def generate_dataset() -> tuple[list[dict], list[dict]]:
+def generate_dataset(per_type: int = 5) -> tuple[list[dict], list[dict]]:
+    """生成设备/测点数据集。
+
+    Args:
+        per_type: 每种设备类型生成的台数，默认 5（共 60 台）。
+            压测万行样例时调大，如 --per-type 2000 -> 2.4 万行设备。
+    """
     device_rows: list[dict] = []
     point_rows: list[dict] = []
     for dtype, (prefix, point_types) in DEVICE_TYPES.items():
-        for i in range(1, 6):  # 每类 5 台，共 60 台
+        for i in range(1, per_type + 1):
             code = f"{prefix}-{i:04d}"
             device_rows.append(
                 {
@@ -295,9 +303,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="生成 G05 演示数据")
     parser.add_argument("--reset", action="store_true", help="先清空业务表（审计表保留）")
     parser.add_argument("--excel-only", action="store_true", help="只生成 Excel 样例")
+    parser.add_argument(
+        "--per-type",
+        type=int,
+        default=5,
+        help="每种设备类型的台数（默认 5，共 60 台）；压测万行样例可调大，如 2000",
+    )
     args = parser.parse_args()
 
-    device_rows, point_rows = generate_dataset()
+    device_rows, point_rows = generate_dataset(per_type=max(1, args.per_type))
     excel_path = PROJECT_ROOT / "data" / "sample" / "sample_devices.xlsx"
     build_excel(excel_path, device_rows, point_rows)
 
