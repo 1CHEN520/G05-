@@ -57,13 +57,24 @@ class ImportResult:
 
 
 def _normalize(value: Any) -> Any:
+    """清洗单元格/表头：去首尾空白（含全角空格 \\u3000 与不间断空格 \\xa0）。
+
+    指导书坑 2：中文表头常带全角空格，仅 strip() 半角空格匹配不上规则；
+    只清首尾、不动内部字符，避免篡改合法值（如「一厂　A区」）。
+    """
     if isinstance(value, str):
-        return value.strip()
+        return value.strip(" \t\r\n\u3000\u00a0")
     return value
 
 
 def read_sheet(path: Path, sheet_name: str) -> list[dict[str, Any]]:
-    """读取指定 sheet 为 dict 列表，首行为表头。"""
+    """读取指定 sheet 为 dict 列表，首行为表头。
+
+    解析层三防御（对应指导书 G05-15）：
+    - 空行整行跳过，不混入数据
+    - 表头 strip 归一（含全角空格），列名可与 rules.yaml 对上
+    - 表头含空列（None/空白）时按真实列下标建映射，**不错位**
+    """
     wb = load_workbook(filename=path, read_only=True, data_only=True)
     try:
         if sheet_name not in wb.sheetnames:
@@ -75,16 +86,67 @@ def read_sheet(path: Path, sheet_name: str) -> list[dict[str, Any]]:
         except StopIteration:
             return []
 
-        columns = [_normalize(h) for h in header if h is not None]
+        # 列下标 -> 列名 映射：跳过 None/空白表头，但保留其余列的真实下标，
+        # 修复"中间缺一个表头导致后面所有列左移一格"的错位 bug
+        col_map: dict[int, str] = {}
+        for idx, head in enumerate(header):
+            name = _normalize(head)
+            if name:
+                col_map[idx] = name
+
         records: list[dict[str, Any]] = []
         for raw in rows_iter:
             if raw is None or all(cell is None or cell == "" for cell in raw):
                 continue  # 跳过空行
-            row = {}
-            for idx, col in enumerate(columns):
-                row[col] = _normalize(raw[idx]) if idx < len(raw) else None
-            records.append(row)
+            records.append(
+                {
+                    name: (_normalize(raw[idx]) if idx < len(raw) else None)
+                    for idx, name in col_map.items()
+                }
+            )
         return records
+    finally:
+        wb.close()
+
+
+def read_sheet_with_rows(path: Path, sheet_name: str) -> tuple[list[dict[str, Any]], list[int]]:
+    """``read_sheet`` 的增强版：同时返回每条记录对应的 **Excel 真实行号**。
+
+    背景：C2 的 ``validate()`` 用列表下标推算行号（header_row_no + idx + 1），
+    一旦文件中间有空行被解析层跳过，打回单里的行号就会整体前移。
+    本函数把真实行号（1-based，含表头）随记录一起带出，供校验层/预检接口
+    直接使用，业务方拿到的"第 N 行"永远和 Excel 里看到的一致。
+    """
+    wb = load_workbook(filename=path, read_only=True, data_only=True)
+    try:
+        if sheet_name not in wb.sheetnames:
+            raise KeyError(f"工作簿缺少 sheet「{sheet_name}」，实际有 {wb.sheetnames}")
+        ws = wb[sheet_name]
+        rows_iter = ws.iter_rows(values_only=True)
+        try:
+            header = next(rows_iter)
+        except StopIteration:
+            return [], []
+
+        col_map: dict[int, str] = {}
+        for idx, head in enumerate(header):
+            name = _normalize(head)
+            if name:
+                col_map[idx] = name
+
+        records: list[dict[str, Any]] = []
+        row_numbers: list[int] = []
+        for row_no, raw in enumerate(rows_iter, start=2):  # 表头是第 1 行
+            if raw is None or all(cell is None or cell == "" for cell in raw):
+                continue  # 跳过空行，但行号继续按 Excel 真实行号计
+            records.append(
+                {
+                    name: (_normalize(raw[idx]) if idx < len(raw) else None)
+                    for idx, name in col_map.items()
+                }
+            )
+            row_numbers.append(row_no)
+        return records, row_numbers
     finally:
         wb.close()
 
@@ -140,6 +202,12 @@ def import_workbook(
             result.message = f"sheet {sheet} 行数 {len(rows)} 超过上限 {max_rows}"
             return result
         parsed[sheet] = rows
+
+    # 防御：整本工作簿一行数据都没有（只有表头/空 sheet），明确打回而非空转
+    if all(len(rows) == 0 for rows in parsed.values()):
+        result.message = "工作簿无有效数据行（各 sheet 均为空），请检查文件内容"
+        result.elapsed_ms = (time.perf_counter() - started) * 1000
+        return result
 
     # 外键上下文：导入测点前，需要知道已存在的设备编号
     existing_devices = set(_existing_keys(session, Device, "device_code").keys())
