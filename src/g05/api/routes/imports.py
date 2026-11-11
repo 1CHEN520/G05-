@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import shutil
 import tempfile
 from pathlib import Path
 
@@ -11,6 +10,7 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
 from g05.api.deps import get_db, get_operator
+from g05.core.config import settings
 from g05.core.logging import get_logger
 from g05.importers.bulk_importer import import_workbook
 from g05.schemas.dto import ImportSummary
@@ -18,7 +18,37 @@ from g05.schemas.dto import ImportSummary
 router = APIRouter(prefix="/import", tags=["导入"])
 log = get_logger("api.import")
 
-MAX_UPLOAD_MB = 50
+# 单块拷贝大小：流式写盘 + 逐块计数，超限立刻中断，避免超大文件先占满磁盘
+UPLOAD_CHUNK = 1024 * 1024
+
+
+def _max_upload_mb() -> int:
+    """上传大小上限（MB）：从 config/app.yaml 读，可配置覆盖，不在代码里写死。"""
+    return int(settings.get("app.import.max_upload_mb", 50))
+
+
+def _save_upload_capped(file: UploadFile, suffix: str) -> Path:
+    """把上传内容流式落盘，边写边计数；超过上限立即删除并抛 413。
+
+    相比"先整体写完再 stat 大小"，超大文件不会再把临时目录写满。
+    """
+    limit = _max_upload_mb() * UPLOAD_CHUNK
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp_path = Path(tmp.name)
+        total = 0
+        try:
+            while chunk := file.file.read(UPLOAD_CHUNK):
+                total += len(chunk)
+                if total > limit:
+                    raise HTTPException(413, f"文件超过上限 {_max_upload_mb()}MB")
+                tmp.write(chunk)
+        except HTTPException:
+            tmp_path.unlink(missing_ok=True)
+            raise
+        except Exception:
+            tmp_path.unlink(missing_ok=True)
+            raise
+    return tmp_path
 
 
 @router.post("/excel", response_model=ImportSummary, summary="上传 Excel 批量导入")
@@ -31,22 +61,14 @@ async def upload_excel(
     if suffix not in {".xlsx", ".xlsm"}:
         raise HTTPException(400, f"仅支持 .xlsx/.xlsm，收到 {suffix or '未知'}")
 
-    tmp_path: Path | None = None
+    tmp_path = _save_upload_capped(file, suffix)
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            tmp_path = Path(tmp.name)
-            shutil.copyfileobj(file.file, tmp)
-            size_mb = tmp_path.stat().st_size / 1024 / 1024
-            if size_mb > MAX_UPLOAD_MB:
-                raise HTTPException(413, f"文件 {size_mb:.1f}MB 超过上限 {MAX_UPLOAD_MB}MB")
-
         result = import_workbook(db, tmp_path, operator=operator)
         payload = result.to_dict()
         payload["file"] = file.filename or "uploaded.xlsx"
         return ImportSummary(**payload)
     finally:
-        if tmp_path and tmp_path.exists():
-            tmp_path.unlink(missing_ok=True)
+        tmp_path.unlink(missing_ok=True)
 
 
 @router.post("/validate", summary="仅校验不写入（预检）")
@@ -65,26 +87,25 @@ async def validate_only(
     if suffix not in {".xlsx", ".xlsm"}:
         raise HTTPException(400, "仅支持 .xlsx/.xlsm")
 
-    tmp_path: Path | None = None
+    tmp_path = _save_upload_capped(file, suffix)
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            tmp_path = Path(tmp.name)
-            shutil.copyfileobj(file.file, tmp)
         engine = RuleEngine()
         existing = {
             r for r in db.execute(select(Device.device_code)).scalars()
         }
         reports = []
+        # 设备 sheet 只读一次：既用于外键上下文，也用于校验，省一次全表解析
         device_rows = read_sheet(tmp_path, engine.sheet_rule("device")["sheet_name"])
         incoming = {str(r.get("device_code", "")).strip() for r in device_rows if r.get("device_code")}
         fk_ctx = {"device.device_code": existing | incoming}
         for sheet in ("device", "measure_point"):
-            rows = read_sheet(tmp_path, engine.sheet_rule(sheet)["sheet_name"])
+            rows = device_rows if sheet == "device" else read_sheet(
+                tmp_path, engine.sheet_rule(sheet)["sheet_name"]
+            )
             reports.append(engine.validate(sheet, rows, foreign_keys=fk_ctx).to_dict())
         return {"ok": all(r["passed"] for r in reports), "reports": reports}
     finally:
-        if tmp_path and tmp_path.exists():
-            tmp_path.unlink(missing_ok=True)
+        tmp_path.unlink(missing_ok=True)
 
 
 @router.get("/template", summary="下载导入模板说明")
