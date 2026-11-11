@@ -49,6 +49,8 @@ scripts/demo_acceptance.py  @1CHEN520
 tests/test_error_contract.py  @1CHEN520
 tests/test_logging_contract.py  @1CHEN520
 tests/test_openapi_contract.py  @1CHEN520
+tests/test_schema.py  @1CHEN520
+tests/test_cli.py  @1CHEN520
 docs/团队角色清单.xlsx  @1CHEN520
 data/archive/.gitkeep  @1CHEN520
 data/db/.gitkeep  @1CHEN520
@@ -106,6 +108,7 @@ docs/adr/ADR-003-audit-immutability.md  @jiang3210656231
 src/g05/api/routes/devices.py  @Tang-guo-li
 src/g05/api/routes/points.py  @Tang-guo-li
 src/g05/services/**  @Tang-guo-li
+tests/test_c4_api.py  @Tang-guo-li
 web/index.html  @Tang-guo-li
 web/css/**  @Tang-guo-li
 web/js/api.js  @Tang-guo-li

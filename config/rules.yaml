@@ -1,6 +1,9 @@
 # ============================================================
 # 导入校验规则（YAML 配置驱动 —— 工业级与 demo 的分水岭）
 # 改动本文件即可调整校验策略，无需改代码
+#
+# 列名别名：每列可用 aliases 声明中文/旧列名（可多个），
+# 导入数据用别名作表头也能命中规则；别名不得与列名或其他列冲突。
 # ============================================================
 
 # ---------------- 通用设置 ----------------
@@ -25,23 +28,28 @@ sheets:
         unique: true
         length: [2, 32]
         regex: "^[A-Z]{2,4}-\\d{3,6}$"     # 例：FAN-0012
+        aliases: ["设备编号", "设备编码"]
       device_name:
         required: true
         type: str
         length: [1, 64]
+        aliases: ["设备名称"]
       device_type:
         required: true
         type: str
         enum: ["风机", "水泵", "压缩机", "电机", "减速机", "换热器", "锅炉", "空压机", "输送机", "变压器", "变频器", "冷却塔"]
+        aliases: ["设备类型"]
       location:
         required: true
         type: str
         length: [1, 128]
+        aliases: ["安装位置", "位置"]
       status:
         required: false
         type: str
         enum: ["运行", "停机", "检修", "报废"]
         default: "运行"
+        aliases: ["设备状态", "运行状态"]
 
   measure_point:
     sheet_name: "测点"
@@ -51,24 +59,29 @@ sheets:
         type: str
         # 外键引用：必须存在于 device 表
         foreign_key: "device.device_code"
+        aliases: ["设备编号", "设备编码"]
       point_code:
         required: true
         type: str
         unique: true
         length: [2, 48]
         regex: "^[A-Z0-9_]{2,48}$"
+        aliases: ["测点编号"]
       point_name:
         required: true
         type: str
         length: [1, 64]
+        aliases: ["测点名称"]
       point_type:
         required: true
         type: str
         enum: ["温度", "压力", "振动", "转速", "电流", "电压", "流量", "液位", "位移", "噪声", "湿度", "功率"]
+        aliases: ["测点类型"]
       unit:
         required: true
         type: str
         length: [1, 16]
+        aliases: ["单位"]
 
 # ---------------- 质量评分权重 ----------------
 scoring:

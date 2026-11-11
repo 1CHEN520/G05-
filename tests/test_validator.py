@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from g05.importers.validator import RuleEngine
+import pytest
+
+from g05.importers.validator import RuleConfigError, RuleEngine
 
 
 def _engine() -> RuleEngine:
@@ -194,3 +196,309 @@ def test_fatal_rule_cannot_be_offset_by_score():
     assert report.total_score >= 1
     assert report.fatal_count >= 1
     assert report.passed is False
+
+
+# ==================== C2 重做新增（G05-14 / G05-23 / G05-24 DoD）====================
+
+
+def _good_device_row(**overrides):
+    """一条合法设备行，供多行构造用。"""
+    row = {
+        "device_code": "FAN-0001",
+        "device_name": "1号风机",
+        "device_type": "风机",
+        "location": "一厂A区",
+    }
+    row.update(overrides)
+    return row
+
+
+def test_high_score_but_missing_required_is_rejected():
+    """G05-24 验收：构造"总分超过阈值但有必填缺失"的数据，必须被打回。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["scoring"]["pass_threshold"] = 85
+    engine = RuleEngine(rules=rules)
+
+    rows = [_good_device_row(device_code=f"FAN-{i:04d}") for i in range(1, 10)]
+    rows.append(_good_device_row(device_code="FAN-0010", device_name=""))  # 唯一的必填缺失
+    report = engine.validate("device", rows)
+
+    assert report.total_score >= report.threshold  # 分数确实达标
+    assert report.fatal_count >= 1  # 但必填缺失是结构性错误
+    assert report.passed is False  # 一票否决，高分救不了
+
+
+def test_fatal_count_gt_zero_means_passed_false():
+    """G05-24 验收：fatal_count > 0 时 passed 恒为 false（unique / foreign_key 同样适用）。"""
+    engine = RuleEngine()
+    rows = [
+        _good_device_row(device_code="FAN-0001"),
+        _good_device_row(device_code="FAN-0001"),  # 主键重复
+    ]
+    report = engine.validate("device", rows)
+    assert report.fatal_count > 0
+    assert report.passed is False
+
+
+def test_unique_flags_all_duplicate_rows():
+    """重复组的每一行都要被标记（用户改任何一行都能消除重复），且行号可定位。"""
+    engine = RuleEngine()
+    rows = [
+        _good_device_row(device_code="FAN-0001"),
+        _good_device_row(device_code="FAN-0002"),
+        _good_device_row(device_code="FAN-0001", device_name="改名风机"),
+    ]
+    report = engine.validate("device", rows)
+    unique_rows = {i.row_no for i in report.issues if i.rule == "unique"}
+    assert unique_rows == {2, 4}  # 首次出现（第2行）与再次出现（第4行）都被标记
+    assert report.passed is False
+
+
+def test_alias_columns_resolve():
+    """G05-14 验收：规则按 sheet 分组并支持列名别名 —— 用中文别名作表头也能命中规则。"""
+    engine = RuleEngine()
+    rows = [
+        {
+            "设备编号": "FAN-0001",
+            "设备名称": "1号风机",
+            "设备类型": "风机",
+            "安装位置": "一厂A区",
+        }
+    ]
+    report = engine.validate("device", rows)
+    assert report.issues == []  # 别名归一后全部命中规则
+    assert report.passed is True
+    assert report.valid_rows == 1
+
+
+def test_alias_violation_still_caught():
+    """别名只改列名映射，不改校验强度：别名列里的坏值照样被拦。"""
+    engine = RuleEngine()
+    rows = [{"设备编号": "fan-1", "设备名称": "x", "设备类型": "风机", "安装位置": "一厂A区"}]
+    report = engine.validate("device", rows)
+    assert any(i.rule == "regex" and i.column == "device_code" for i in report.issues)
+
+
+def test_normalize_rows_does_not_mutate_input():
+    """normalize_rows 返回新结构，别名归一不改入参。"""
+    engine = RuleEngine()
+    rows = [{"设备编号": "FAN-0001", "设备名称": "1号风机", "设备类型": "风机", "安装位置": "一厂A区"}]
+    normalized = engine.normalize_rows("device", rows)
+    assert "device_code" in normalized[0]
+    assert "设备编号" in rows[0]  # 原数据不动
+
+
+_BAD_RULES_YAML = """\
+settings:
+  strip_whitespace: true
+sheets:
+  device:
+    sheet_name: "设备"
+    columns:
+      device_code:
+        required: true
+        colour: red
+"""
+
+
+def test_yaml_error_reports_line_number(tmp_path):
+    """G05-14 验收：YAML 写错时有明确报错行号。"""
+    rules_file = tmp_path / "rules.yaml"
+    rules_file.write_text(_BAD_RULES_YAML, encoding="utf-8")
+    with pytest.raises(RuleConfigError) as excinfo:
+        RuleEngine.from_yaml(rules_file)
+    msg = str(excinfo.value)
+    assert "第 9 行" in msg  # colour: red 在第 9 行
+    assert "colour" in msg
+
+
+def test_yaml_syntax_error_reports_line_number(tmp_path):
+    """YAML 语法错误（缩进/结构）同样带行号。"""
+    rules_file = tmp_path / "rules.yaml"
+    rules_file.write_text("sheets:\n  device:\n   sheet_name: [\"坏\", 结构", encoding="utf-8")
+    with pytest.raises(RuleConfigError) as excinfo:
+        RuleEngine.from_yaml(rules_file)
+    assert "行" in str(excinfo.value)
+
+
+def test_from_yaml_happy_path(tmp_path):
+    """合法规则文件正常加载并生效。"""
+    rules_file = tmp_path / "rules.yaml"
+    rules_file.write_text(
+        "\n".join(
+            [
+                "sheets:",
+                "  device:",
+                '    sheet_name: "设备"',
+                "    columns:",
+                "      device_code:",
+                "        required: true",
+                "        regex: \"^[A-Z]+$\"",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    engine = RuleEngine.from_yaml(rules_file)
+    assert engine.expected_columns("device") == ["device_code"]
+    rows = [{"device_code": "GOOD"}, {"device_code": "bad"}]
+    report = engine.validate("device", rows)
+    assert any(i.rule == "regex" for i in report.issues)
+
+
+def test_unknown_rule_key_rejected():
+    """规则键拼错（如 regix）应在构造时立刻报错，而不是被静默忽略。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["sheets"]["device"]["columns"]["device_name"] = {"required": True, "regix": ".*"}
+    with pytest.raises(RuleConfigError) as excinfo:
+        RuleEngine(rules=rules)
+    assert "regix" in str(excinfo.value)
+
+
+def test_alias_conflict_between_columns_rejected():
+    """同一别名挂两列 = 校验结果不可预期，构造时必须报错。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["sheets"]["device"]["columns"]["device_name"]["aliases"] = ["设备编号"]
+    with pytest.raises(RuleConfigError) as excinfo:
+        RuleEngine(rules=rules)
+    assert "设备编号" in str(excinfo.value)
+
+
+def test_weights_must_sum_to_100():
+    """权重之和不是 100 的配置直接拒绝（评分口径必须能对账）。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["scoring"]["weights"] = {"completeness": 50, "compliance": 50, "uniqueness": 50}
+    with pytest.raises(RuleConfigError) as excinfo:
+        RuleEngine(rules=rules)
+    assert "100" in str(excinfo.value)
+
+
+def test_invalid_regex_pattern_rejected():
+    """写错的正则在构造时报行号级错误，而不是导入第一条数据时才炸。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["sheets"]["device"]["columns"]["device_name"]["regex"] = "[未闭合"
+    with pytest.raises(RuleConfigError):
+        RuleEngine(rules=rules)
+
+
+def test_range_bounds_must_be_ordered():
+    """range/length 区间写反（min > max）属于配置错误。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["sheets"]["device"]["columns"]["device_name"] = {"required": True, "range": [10, 1]}
+    with pytest.raises(RuleConfigError):
+        RuleEngine(rules=rules)
+
+
+def test_date_type_rule():
+    """type: date —— datetime 对象与 ISO 字符串通过，普通文本被拦。"""
+    import copy
+    from datetime import datetime
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["sheets"]["device"]["columns"]["status"] = {"type": "date"}
+    engine = RuleEngine(rules=rules)
+    base = _good_device_row()
+    assert not any(i.rule == "type" for i in engine.validate("device", [base | {"status": datetime(2026, 1, 2, 10, 0)}]).issues)
+    assert not any(i.rule == "type" for i in engine.validate("device", [base | {"status": "2026-01-02"}]).issues)
+    bad = engine.validate("device", [base | {"status": "二零二六年"}])
+    assert any(i.rule == "type" and "日期" in i.message for i in bad.issues)
+
+
+def test_new_rule_only_yaml_change():
+    """G05-14 验收：新增一条规则只改 YAML，不改 Python —— 行为立刻生效。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["sheets"]["device"]["columns"]["location"]["regex"] = "^[\\u4e00-\\u9fa5]+"  # 位置必须纯中文
+    engine = RuleEngine(rules=rules)
+    assert any(
+        i.rule == "regex" and i.column == "location"
+        for i in engine.validate("device", [_good_device_row(location="Plant A")]).issues
+    )
+    assert engine.validate("device", [_good_device_row(location="一厂区")]).passed
+
+
+def test_max_null_ratio_rejects_whole_sheet():
+    """settings.max_null_ratio：必填列空值比例超限 -> 整表判不通过（列级 null_ratio 问题）。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["settings"]["max_null_ratio"] = 0.3
+    engine = RuleEngine(rules=rules)
+    rows = [
+        _good_device_row(device_name="有名字"),
+        _good_device_row(device_name=""),
+        _good_device_row(device_name=""),
+        _good_device_row(device_name=""),
+    ]
+    report = engine.validate("device", rows)
+    null_issues = [i for i in report.issues if i.rule == "null_ratio"]
+    assert null_issues and null_issues[0].column == "device_name"
+    assert report.fatal_count >= 1
+    assert report.passed is False
+
+
+def test_max_null_ratio_not_triggered_below_threshold():
+    """空值比例在容忍范围内时不产生 null_ratio（数据靠 fatal 语义正常判）。"""
+    import copy
+
+    from g05.core.config import settings
+
+    rules = copy.deepcopy(settings.rules)
+    rules["settings"]["max_null_ratio"] = 0.5
+    engine = RuleEngine(rules=rules)
+    rows = [_good_device_row(), _good_device_row(device_name="")]
+    report = engine.validate("device", rows)
+    assert not any(i.rule == "null_ratio" for i in report.issues)
+    # 必填缺失仍是结构性错误 -> 不放行
+    assert report.passed is False
+
+
+def test_sheet_missing_error_mentions_available_sheets():
+    """sheet 名写错时给出可用清单，方便定位是 sheet 分组问题。"""
+    engine = RuleEngine()
+    with pytest.raises(KeyError) as excinfo:
+        engine.validate("devices", [_good_device_row()])
+    assert "device" in str(excinfo.value)
+
+
+def test_bad_rows_are_sorted_and_unique():
+    """bad_rows 必须是去重排序后的 Excel 行号，供打回单直接使用。"""
+    engine = RuleEngine()
+    rows = [
+        _good_device_row(device_code="BAD", device_name=""),
+        _good_device_row(device_code="WORSE", device_name=""),
+    ]
+    report = engine.validate("device", rows)
+    assert report.bad_rows == [2, 3]
+    assert report.invalid_rows == 2
+    assert report.valid_rows == 0

@@ -1,4 +1,29 @@
 /* 总览 / 设备 / 测点 / 审计 / 导入 页面逻辑 —— 负责人：C4（CRUD 与 API） */
+
+/* ---------------- 操作人 ---------------- */
+/* 页头输入框与 localStorage 双向同步：填了就带上，刷新不丢。 */
+function syncOperatorUI() {
+  const input = $("#op-input");
+  if (!input) return;
+  const saved = currentOperator();
+  if (document.activeElement !== input) input.value = saved;
+  const hint = $("#op-hint");
+  if (hint) {
+    hint.textContent = saved ? `当前操作人：${saved}` : "未填写操作人，写操作将记为 anonymous";
+    hint.className = saved ? "muted" : "muted warn-text";
+  }
+}
+function initOperatorInput() {
+  const input = $("#op-input");
+  if (!input) return;
+  syncOperatorUI();
+  input.addEventListener("change", () => setOperator(input.value));
+  input.addEventListener("blur", () => setOperator(input.value));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { setOperator(input.value); input.blur(); }
+  });
+}
+
 /* ---------------- 健康检查 ---------------- */
 async function checkHealth() {
   try {
@@ -31,8 +56,10 @@ let devPage = 1;
 async function loadDevices(page) {
   if (page < 1) return;
   devPage = page;
+  const tbody = $("#dev-body");
   const kw = encodeURIComponent($("#dev-kw").value.trim());
   const type = encodeURIComponent($("#dev-type").value);
+  renderLoading(tbody, 8);
   try {
     const d = await api(`/api/devices?page=${page}&size=20&keyword=${kw}&device_type=${type}`);
     $("#dev-count").textContent = `共 ${d.total} 条`;
@@ -40,29 +67,57 @@ async function loadDevices(page) {
     $("#dev-prev").disabled = page <= 1;
     $("#dev-next").disabled = page * d.size >= d.total;
     if (!d.items.length) {
-      $("#dev-body").innerHTML = '<tr><td colspan="8" class="empty">没有匹配的设备</td></tr>';
+      // 空态要说清为什么空，并给出路
+      const filtered = kw || type;
+      renderEmpty(
+        tbody, 8,
+        filtered ? "没有匹配的设备，换个关键字或筛选条件试试" : "还没有设备，先去导入页上传一份 Excel",
+        filtered ? "" : '<button class="btn" style="margin-top:10px" onclick="gotoTab(\'import\')">去导入页</button>',
+      );
       return;
     }
-    $("#dev-body").innerHTML = d.items.map((x) => `
+    // 用户数据全部走 data-* 属性 + 事件委托，不拼进 onclick 的 JS 字符串 ——
+    // esc() 只挡 HTML 注入，挡不住 onclick 里逃逸的引号。
+    tbody.innerHTML = d.items.map((x) => `
       <tr>
-        <td class="mono">${x.id}</td>
+        <td class="mono">${esc(x.id)}</td>
         <td class="mono">${esc(x.device_code)}</td>
         <td>${esc(x.device_name)}</td>
         <td><span class="pill blue">${esc(x.device_type)}</span></td>
         <td>${esc(x.location)}</td>
         <td><span class="pill ${x.status === "运行" ? "ok" : x.status === "停机" ? "warn" : ""}">${esc(x.status)}</span></td>
-        <td class="mono">v${x.version}</td>
-        <td><button class="btn ghost" style="padding:3px 8px;font-size:12px"
-             onclick="viewDevicePoints(${x.id})">测点</button></td>
+        <td class="mono">v${esc(x.version)}</td>
+        <td>
+          <button class="btn ghost row-btn" data-act="dev-points" data-id="${esc(x.id)}">测点</button>
+          <button class="btn ghost row-btn" data-act="dev-rename" data-id="${esc(x.id)}"
+                  data-name="${esc(x.device_name)}">改名</button>
+        </td>
       </tr>`).join("");
-  } catch (e) { toast("加载设备失败：" + e.message, "err"); }
+  } catch (e) {
+    handleListError(tbody, 8, e, () => loadDevices(page));
+  }
 }
+
 function viewDevicePoints(id) {
-  $$("nav button").forEach((b) => b.classList.remove("active"));
-  $$("section").forEach((s) => s.classList.remove("active"));
-  document.querySelector('[data-tab="points"]').classList.add("active");
-  $("#points").classList.add("active");
+  switchTab("points");
   loadPoints(1, id);
+}
+
+/* 设备改名：走 PATCH + exclude_unset，服务端只改传了的字段 */
+async function renameDevice(id, oldName) {
+  const newName = prompt(`设备 #${id} 改名\n当前名称：${oldName}\n\n请输入新名称：`);
+  if (!newName || newName.trim() === oldName) return;
+  try {
+    await api(`/api/devices/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ device_name: newName.trim() }),
+    });
+    toast("设备改名成功", "ok");
+    loadDevices(devPage);
+  } catch (e) {
+    toast("改名失败：" + e.message, "err");
+  }
 }
 
 /* ---------------- 测点 ---------------- */
@@ -70,9 +125,11 @@ let ptPage = 1;
 async function loadPoints(page, deviceId = null) {
   if (page < 1) return;
   ptPage = page;
+  const tbody = $("#pt-body");
   const kw = encodeURIComponent($("#pt-kw").value.trim());
   const type = encodeURIComponent($("#pt-type").value);
   const dev = deviceId ? `&device_id=${deviceId}` : "";
+  renderLoading(tbody, 8);
   try {
     const d = await api(`/api/points?page=${page}&size=20&keyword=${kw}&point_type=${type}${dev}`);
     $("#pt-count").textContent = `共 ${d.total} 条`;
@@ -80,27 +137,34 @@ async function loadPoints(page, deviceId = null) {
     $("#pt-prev").disabled = page <= 1;
     $("#pt-next").disabled = page * d.size >= d.total;
     if (!d.items.length) {
-      $("#pt-body").innerHTML = '<tr><td colspan="8" class="empty">没有匹配的测点</td></tr>';
+      const filtered = kw || type || deviceId;
+      renderEmpty(
+        tbody, 8,
+        filtered ? "没有匹配的测点，换个关键字或筛选条件试试" : "还没有测点，先去导入页上传一份 Excel",
+        filtered ? "" : '<button class="btn" style="margin-top:10px" onclick="gotoTab(\'import\')">去导入页</button>',
+      );
       return;
     }
-    $("#pt-body").innerHTML = d.items.map((x) => `
+    tbody.innerHTML = d.items.map((x) => `
       <tr>
-        <td class="mono">${x.id}</td>
+        <td class="mono">${esc(x.id)}</td>
         <td class="mono">${esc(x.point_code)}</td>
         <td>${esc(x.point_name)}${x.renamed_from ? ` <span class="pill">原:${esc(x.renamed_from)}</span>` : ""}</td>
         <td><span class="pill blue">${esc(x.point_type)}</span></td>
         <td class="mono">${esc(x.unit)}</td>
         <td class="mono">${esc(x.device_code || x.device_id)}<div class="muted" style="font-size:11px">${esc(x.device_name || "")}</div></td>
-        <td class="mono">v${x.version}</td>
+        <td class="mono">v${esc(x.version)}</td>
         <td>
-          <button class="btn ghost" style="padding:3px 8px;font-size:12px"
-            onclick="renamePoint(${x.id}, '${esc(x.point_name)}')">改名</button>
-          <button class="btn ghost" style="padding:3px 8px;font-size:12px"
-            onclick="gotoImpact('${esc(x.point_code)}')">血缘</button>
+          <button class="btn ghost row-btn" data-act="pt-rename" data-id="${esc(x.id)}"
+                  data-name="${esc(x.point_name)}">改名</button>
+          <button class="btn ghost row-btn" data-act="pt-impact" data-code="${esc(x.point_code)}">血缘</button>
         </td>
       </tr>`).join("");
-  } catch (e) { toast("加载测点失败：" + e.message, "err"); }
+  } catch (e) {
+    handleListError(tbody, 8, e, () => loadPoints(page, deviceId));
+  }
 }
+
 async function renamePoint(id, oldName) {
   const newName = prompt(`测点 #${id} 改名\n当前名称：${oldName}\n\n请输入新名称：`);
   if (!newName || newName === oldName) return;
@@ -108,40 +172,41 @@ async function renamePoint(id, oldName) {
   try {
     const r = await api(`/api/points/${id}/rename`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Operator": "web-ui" },
-      body: JSON.stringify({ new_name: newName, operator: "web-ui", reason }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ new_name: newName, reason }),
     });
     const n = r.affected?.total ?? 0;
+    // 空影响面也是有效信息：显示"0 个受影响"比什么都不显示更让人放心
     toast(`改名成功，版本 v${r.new_version}，影响下游 ${n} 个对象`, "ok");
     loadPoints(ptPage);
     if (n > 0) showImpactResult(r.affected);
   } catch (e) { toast("改名失败：" + e.message, "err"); }
 }
+
 function gotoImpact(code) {
-  $$("nav button").forEach((b) => b.classList.remove("active"));
-  $$("section").forEach((s) => s.classList.remove("active"));
-  document.querySelector('[data-tab="lineage"]').classList.add("active");
-  $("#lineage").classList.add("active");
+  switchTab("lineage");
   $("#lin-key").value = code;
   queryImpact();
 }
 
 /* ---------------- 审计 ---------------- */
 async function loadAudit() {
+  const tbody = $("#au-body");
   const table = encodeURIComponent($("#au-table").value);
   const op = encodeURIComponent($("#au-op").value.trim());
+  renderLoading(tbody, 8);
   try {
     const d = await api(`/api/audit?table_name=${table}&operator=${op}&limit=200`);
     if (!d.items.length) {
-      $("#au-body").innerHTML = '<tr><td colspan="8" class="empty">暂无审计记录</td></tr>';
+      renderEmpty(tbody, 8, "暂无审计记录，产生变更后会自动留痕");
       return;
     }
     const actionPill = (a) =>
       a === "INSERT" ? "ok" : a === "RENAME" ? "blue" : a.includes("DELETE") ? "err" : "warn";
-    $("#au-body").innerHTML = d.items.map((e) => `
+    tbody.innerHTML = d.items.map((e) => `
       <tr>
-        <td class="mono">${e.id}</td>
-        <td class="mono" style="font-size:11px">${fmtTime(e.changed_at)}</td>
+        <td class="mono">${esc(e.id)}</td>
+        <td class="mono" style="font-size:11px">${esc(fmtTime(e.changed_at))}</td>
         <td class="mono">${esc(e.table_name)}</td>
         <td class="mono">${esc(e.business_key || "-")}</td>
         <td><span class="pill ${actionPill(e.action)}">${esc(e.action)}</span></td>
@@ -150,20 +215,26 @@ async function loadAudit() {
         <td class="mono" style="font-size:11px;max-width:320px;overflow:hidden;text-overflow:ellipsis"
             title="${esc(e.new_value || "")}">${esc((e.new_value || "").slice(0, 90))}</td>
       </tr>`).join("");
-  } catch (e) { toast("加载审计失败：" + e.message, "err"); }
+  } catch (e) {
+    handleListError(tbody, 8, e, () => loadAudit());
+  }
 }
+
 async function verifyImmutable() {
+  const box = $("#immutable-box");
   try {
     const r = await api("/api/audit/verify-immutable", { method: "POST" });
-    $("#immutable-box").innerHTML = `
-      <div class="card" style="background:${r.immutable ? "#f0fbf4" : "#fef2f2"};
-           border-color:${r.immutable ? "#bfe8cf" : "#f8c9c9"};margin-bottom:12px">
+    box.innerHTML = `
+      <div class="card verify-card ${r.immutable ? "verify-ok" : "verify-bad"}">
         <b>${r.immutable ? "✓ 审计表不可篡改" : "✗ 存在篡改风险"}</b>
         <div class="muted" style="margin-top:6px;font-size:12px">
-          ${r.checks.map((c) => `${c.operation}: ${c.blocked ? "已拦截" : "未拦截"} — ${esc(c.detail)}`).join("<br>")}
+          ${r.checks.map((c) => `${esc(c.operation)}: ${c.blocked ? "已拦截" : "未拦截"} — ${esc(c.detail)}`).join("<br>")}
         </div>
       </div>`;
-  } catch (e) { toast("验证失败：" + e.message, "err"); }
+  } catch (e) {
+    box.innerHTML = `<div class="card verify-bad"><b>验证失败</b><div class="muted">${esc(e.message)}</div></div>`;
+    toast("验证失败：" + e.message, "err");
+  }
 }
 
 /* ---------------- 导入 ---------------- */
@@ -172,59 +243,61 @@ async function doImport() {
   if (!f) { toast("请先选择 Excel 文件", "err"); return; }
   const btn = $("#import-btn");
   btn.disabled = true; btn.textContent = "导入中…";
+  $("#import-result").innerHTML =
+    '<div class="card"><div class="skeleton" style="height:56px"></div>' +
+    '<div class="muted center" style="margin-top:10px">正在校验并导入，请稍候…</div></div>';
   const fd = new FormData();
   fd.append("file", f);
   try {
-    const r = await api("/api/import/excel", {
-      method: "POST", body: fd, headers: { "X-Operator": "web-ui" },
-    });
+    const r = await api("/api/import/excel", { method: "POST", body: fd });
     renderImportResult(r);
     toast(r.ok ? `导入成功，耗时 ${r.elapsed_ms}ms` : "校验未通过，整批未写入", r.ok ? "ok" : "err");
     if (r.ok) loadOverview();
   } catch (e) {
-    $("#import-result").innerHTML = `<div class="card" style="background:#fef2f2;border-color:#f8c9c9">
-      <b>导入失败</b><div class="muted">${esc(e.message)}</div></div>`;
+    $("#import-result").innerHTML = `<div class="card verify-bad">
+      <b>导入失败</b><div class="muted">${esc(e.message)}</div>
+      <button class="btn ghost" style="margin-top:10px" onclick="doImport()">重试</button></div>`;
     toast("导入失败：" + e.message, "err");
   } finally {
     btn.disabled = false; btn.textContent = "开始导入";
   }
 }
+
 function renderImportResult(r) {
   const reports = r.reports || [];
   const scoreBar = (v, label) => `
     <div style="margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;font-size:12px">
-        <span class="muted">${label}</span><span class="mono">${v.toFixed(1)}</span>
+        <span class="muted">${esc(label)}</span><span class="mono">${esc(Number(v).toFixed(1))}</span>
       </div>
-      <div class="bar"><i style="width:${Math.min(100, v)}%;background:${v >= 85 ? "#0f9d58" : v >= 60 ? "#d97706" : "#dc2626"}"></i></div>
+      <div class="bar"><i style="width:${Math.min(100, Number(v))}%;background:${v >= 85 ? "var(--ok)" : v >= 60 ? "var(--warn)" : "var(--err)"}"></i></div>
     </div>`;
   $("#import-result").innerHTML = `
-    <div class="card" style="background:${r.ok ? "#f0fbf4" : "#fef2f2"};
-         border-color:${r.ok ? "#bfe8cf" : "#f8c9c9"}">
+    <div class="card ${r.ok ? "verify-ok" : "verify-bad"}">
       <b>${r.ok ? "✓ 导入成功" : "✗ 已打回"}</b>
-      <span class="muted" style="margin-left:10px">${esc(r.message)} · 耗时 ${r.elapsed_ms} ms</span>
-      ${r.ok ? `<div style="margin-top:8px">${Object.entries(r.inserted).map(([k, v]) => `<span class="pill ok">${k}: +${v}</span>`).join(" ")}</div>` : ""}
+      <span class="muted" style="margin-left:10px">${esc(r.message)} · 耗时 ${esc(r.elapsed_ms)} ms</span>
+      ${r.ok ? `<div style="margin-top:8px">${Object.entries(r.inserted || {}).map(([k, v]) => `<span class="pill ok">${esc(k)}: +${esc(v)}</span>`).join(" ")}</div>` : ""}
     </div>
     ${reports.map((rep) => `
       <div class="card">
-        <h2>${esc(rep.sheet)} <small>${rep.total_rows} 行 · 通过 ${rep.valid_rows} · 问题 ${rep.invalid_rows} 行</small></h2>
+        <h2>${esc(rep.sheet)} <small>${esc(rep.total_rows)} 行 · 通过 ${esc(rep.valid_rows)} · 问题 ${esc(rep.invalid_rows)} 行</small></h2>
         <div class="split">
           <div>
             ${scoreBar(rep.scores.completeness, "完整性 (40%)")}
             ${scoreBar(rep.scores.compliance, "合规性 (35%)")}
             ${scoreBar(rep.scores.uniqueness, "唯一性 (25%)")}
             <div style="margin-top:10px;font-size:13px">
-              总分 <b class="mono" style="font-size:16px;color:${rep.passed ? "#0f9d58" : "#dc2626"}">${rep.total_score}</b>
-              / 阈值 ${rep.threshold}
+              总分 <b class="mono score-value ${rep.passed ? "score-pass" : "score-fail"}">${esc(rep.total_score)}</b>
+              / 阈值 ${esc(rep.threshold)}
             </div>
           </div>
           <div>
-            ${rep.issues.length ? `
+            ${rep.issues && rep.issues.length ? `
               <div class="table-wrap" style="max-height:220px">
                 <table>
                   <thead><tr><th>行号</th><th>列</th><th>规则</th><th>说明</th></tr></thead>
                   <tbody>${rep.issues.slice(0, 60).map((i) => `
-                    <tr><td class="mono">${i.row}</td><td class="mono">${esc(i.column)}</td>
+                    <tr><td class="mono">${esc(i.row)}</td><td class="mono">${esc(i.column)}</td>
                         <td><span class="pill warn">${esc(i.rule)}</span></td>
                         <td class="muted" style="font-size:12px">${esc(i.message)}</td></tr>`).join("")}
                   </tbody>
