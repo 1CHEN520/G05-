@@ -291,7 +291,8 @@ def bench_lineage(node_key: str) -> float:
 
 def bench_pagination(page: int = 1, size: int = 20) -> float:
     """测列表分页查询耗时（毫秒）。"""
-    from g05.services.point_service import list_devices, list_points
+    from g05.services.device_service import list_devices
+    from g05.services.point_service import list_points
 
     with session_scope() as db:
         started = time.perf_counter()
