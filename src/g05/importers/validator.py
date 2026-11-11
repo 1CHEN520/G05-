@@ -179,9 +179,9 @@ def _validate_rules(rules: dict, lines: dict[tuple[Any, ...], int] | None) -> No
                 if pair is None:
                     continue
                 valid = (
-                    isinstance(pair, (list, tuple))
+                    isinstance(pair, list | tuple)
                     and len(pair) == 2
-                    and all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in pair)
+                    and all(isinstance(x, int | float) and not isinstance(x, bool) for x in pair)
                     and pair[0] <= pair[1]
                 )
                 if not valid:
@@ -227,7 +227,7 @@ def _validate_rules(rules: dict, lines: dict[tuple[Any, ...], int] | None) -> No
                         err(("scoring", ":weights"), f"weights 缺少 {missing} 三档权重")
                     else:
                         values = [weights[k] for k in DEFAULT_WEIGHTS]
-                        if any(not isinstance(v, (int, float)) or isinstance(v, bool) or v <= 0 for v in values):
+                        if any(not isinstance(v, int | float) or isinstance(v, bool) or v <= 0 for v in values):
                             err(("scoring", ":weights"), "三档权重都必须是正数")
                         elif sum(values) != 100:
                             err(("scoring", ":weights"), f"三档权重之和必须为 100，实际 {sum(values)}")
@@ -242,7 +242,7 @@ def _validate_rules(rules: dict, lines: dict[tuple[Any, ...], int] | None) -> No
                 if key not in SETTINGS_KEYS:
                     err(("settings", f":{key}"), f"未知设置键 {key!r}，允许 {sorted(SETTINGS_KEYS)}")
             ratio = settings_sec.get("max_null_ratio")
-            if ratio is not None and not (isinstance(ratio, (int, float)) and 0 < ratio < 1):
+            if ratio is not None and not (isinstance(ratio, int | float) and 0 < ratio < 1):
                 err(("settings", ":max_null_ratio"), "max_null_ratio 必须是 0~1 之间的小数")
 
     if problems:
@@ -629,7 +629,7 @@ class RuleEngine:
     @staticmethod
     def _is_date(value: Any) -> bool:
         """Excel 单元格可能是 datetime 对象，也可能是 ISO 字符串，两者都算合法日期。"""
-        if isinstance(value, (datetime, date)):
+        if isinstance(value, datetime | date):
             return True
         text = str(value).strip()
         for parser in (datetime.fromisoformat, date.fromisoformat):
