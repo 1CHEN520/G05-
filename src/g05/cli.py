@@ -229,8 +229,18 @@ def cmd_initdb(args: argparse.Namespace) -> int:
 
 def cmd_seed(_: argparse.Namespace) -> int:
     import runpy
+    import sys
 
-    runpy.run_path(str(PROJECT_ROOT / "scripts" / "seed_data.py"), run_name="__main__")
+    # runpy.run_path 会透传当前 sys.argv（含 "seed" 子命令名）给目标脚本，
+    # seed_data.py 的 argparse 会把它当未知参数直接报错（issue #38 联调发现）。
+    # 这里把 argv 隔离成目标脚本自己的视角，跑完恢复。
+    target = str(PROJECT_ROOT / "scripts" / "seed_data.py")
+    argv_backup = sys.argv
+    sys.argv = [target]
+    try:
+        runpy.run_path(target, run_name="__main__")
+    finally:
+        sys.argv = argv_backup
     return 0
 
 
