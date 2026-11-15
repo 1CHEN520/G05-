@@ -314,17 +314,33 @@ def bench_audit(limit: int = 200) -> float:
 # ------------------------------------------------------------
 # 主流程
 # ------------------------------------------------------------
+def _percentile(samples: list[float], pct: float) -> float:
+    """线性插值法分位数（与 numpy 默认一致）。samples 需已排序。"""
+    if not samples:
+        return 0.0
+    if len(samples) == 1:
+        return samples[0]
+    rank = (len(samples) - 1) * pct / 100
+    low = int(rank)
+    high = min(low + 1, len(samples) - 1)
+    frac = rank - low
+    return samples[low] * (1 - frac) + samples[high] * frac
+
+
 def measure(label: str, fn, repeat: int) -> dict[str, Any]:
-    """跑 repeat 次取中位数。"""
+    """跑 repeat 次，输出中位数与 p95/p99（期末评分标准：性能有数据=压测/p95/EXPLAIN）。"""
     samples: list[float] = []
     for _ in range(repeat):
         samples.append(fn())
-    median = statistics.median(samples)
+    ordered = sorted(samples)
+    median = statistics.median(ordered)
     return {
         "label": label,
         "median_ms": round(median, 2),
         "min_ms": round(min(samples), 2),
         "max_ms": round(max(samples), 2),
+        "p95_ms": round(_percentile(ordered, 95), 2),
+        "p99_ms": round(_percentile(ordered, 99), 2),
         "samples_ms": [round(s, 2) for s in samples],
         "repeat": repeat,
     }
@@ -334,7 +350,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="G05 性能基线")
     parser.add_argument("--devices", type=int, default=200, help="设备数量")
     parser.add_argument("--points-per-device", type=int, default=5, help="每台设备的测点数")
-    parser.add_argument("--repeat", type=int, default=3, help="每类指标重复次数（取中位数）")
+    parser.add_argument("--repeat", type=int, default=20, help="每类指标重复次数（取中位数与 p95/p99）")
     parser.add_argument("--json", type=str, default=None, help="同时输出 JSON 到指定路径")
     args = parser.parse_args()
 
@@ -462,6 +478,7 @@ def main() -> None:
             color = GREEN if ok else RED
             mark = "达标" if ok else "未达标"
             print(f"{r['label']:<18} 中位数 {r['median_ms']:>9.2f} ms  "
+                  f"p95 {r['p95_ms']:>8.2f} ms  "
                   f"(min {r['min_ms']:.2f} / max {r['max_ms']:.2f})  "
                   f"目标 {target:.0f} ms  {color}{mark}{RESET}")
             print(f"{DIM}    数据规模：{r['data_scale']}{RESET}")
