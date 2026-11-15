@@ -368,10 +368,60 @@ def main() -> None:
         print(f"{DIM}数据规模：{data}{RESET}")
         print()
 
-        # 血缘需要一个真实节点
+        # 血缘基准：真实构造三层 200 节点图（PERF_ROOT + 20 数据集 + 100 任务 + 80 报表）。
+        # 旧版只查"血缘表里不存在的第一个测点"——空结果当然毫秒级返回，
+        # 那个 0.18ms 不是血缘查询的成绩（#38 答辩前证据核查发现）。
+        # 构造方式与 tests/test_lineage.py::test_200_node_query_is_fast_and_sql_scales_with_depth 一致。
+        node_key = "PERF_ROOT"
         with session_scope() as db:
-            first_point = db.execute(select(MeasurePoint).limit(1)).scalar_one()
-            node_key = first_point.point_code if first_point else "BENCH-NONE"
+            from g05.lineage.impact import (
+                register_edges,
+                register_node,
+                register_nodes,
+            )
+
+            first_layer = [f"PERF_DS_{index:02d}" for index in range(20)]
+            second_layer = [f"PERF_TASK_{index:03d}" for index in range(100)]
+            third_layer = [f"PERF_RPT_{index:03d}" for index in range(80)]
+            register_node(db, node_type="point", node_key="PERF_ROOT", node_name="性能根节点")
+            register_nodes(
+                db,
+                [{"node_type": "dataset", "node_key": key, "node_name": key} for key in first_layer]
+                + [{"node_type": "task", "node_key": key, "node_name": key} for key in second_layer]
+                + [{"node_type": "report", "node_key": key, "node_name": key} for key in third_layer],
+            )
+            register_edges(
+                db,
+                [
+                    {
+                        "upstream_key": "PERF_ROOT",
+                        "downstream_key": key,
+                        "upstream_type": "point",
+                        "downstream_type": "dataset",
+                    }
+                    for key in first_layer
+                ]
+                + [
+                    {
+                        "upstream_key": first_layer[index % len(first_layer)],
+                        "downstream_key": key,
+                        "upstream_type": "dataset",
+                        "downstream_type": "task",
+                    }
+                    for index, key in enumerate(second_layer)
+                ]
+                + [
+                    {
+                        "upstream_key": second_layer[index % len(second_layer)],
+                        "downstream_key": key,
+                        "upstream_type": "task",
+                        "downstream_type": "report",
+                    }
+                    for index, key in enumerate(third_layer)
+                ],
+            )
+            db.commit()
+        print(f"{DIM}血缘基准图：三层 200 节点 / 200 条边，查询 PERF_ROOT 下游全量{RESET}")
 
         results: list[dict[str, Any]] = []
 
