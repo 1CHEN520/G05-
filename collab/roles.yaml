@@ -63,6 +63,10 @@ roles:
       - scripts/make_roster_xlsx.py
       - scripts/apply_roster.py
       - scripts/demo_acceptance.py
+      - scripts/explain_queries.py
+      - scripts/reconcile.py
+      - scripts/explain_queries.py
+      - scripts/reconcile.py
       - tests/test_error_contract.py
       - tests/test_logging_contract.py
       - tests/test_openapi_contract.py

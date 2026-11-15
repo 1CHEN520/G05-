@@ -1,0 +1,72 @@
+{
+  "db": "data/db/g05.db",
+  "all_hit": true,
+  "results": [
+    {
+      "label": "审计时间线（按时间倒序分页）",
+      "why": "`GET /api/audit` 的主查询（audit/service.py::query）",
+      "plan": "SCAN audit_log USING INDEX ix_audit_log_changed_at",
+      "using_index": true,
+      "pure_scan": false,
+      "temp_sort": false,
+      "expect_index": "ix_audit_table_time",
+      "expect_note": "（提示：计划使用了其他索引，期望的 ix_audit_table_time 未出现）",
+      "hit": true
+    },
+    {
+      "label": "审计按业务键过滤（打回单/追溯）",
+      "why": "按业务键追溯变更历史（G05-21 查询路径）",
+      "plan": "SEARCH audit_log USING INDEX ix_audit_business_time (business_key=?)",
+      "using_index": true,
+      "pure_scan": false,
+      "temp_sort": false,
+      "expect_index": "ix_audit_business_time",
+      "expect_note": "",
+      "hit": true
+    },
+    {
+      "label": "血缘 BFS 一层展开（按上游找下游）",
+      "why": "血缘 BFS 每层的边展开查询（lineage/impact.py）",
+      "plan": "SEARCH lineage_edge USING COVERING INDEX sqlite_autoindex_lineage_edge_1 (upstream_id=?) || LIST SUBQUERY 1 || SEARCH lineage_node USING COVERING INDEX ix_lineage_node_node_key (node_key=?)",
+      "using_index": true,
+      "pure_scan": false,
+      "temp_sort": false,
+      "expect_index": null,
+      "expect_note": "",
+      "hit": true
+    },
+    {
+      "label": "血缘 BFS 反向（按下游找上游）",
+      "why": "血缘 BFS 反向层展开（lineage/impact.py）",
+      "plan": "SEARCH lineage_edge USING INDEX ix_edge_downstream (downstream_id=?) || LIST SUBQUERY 1 || SEARCH lineage_node USING COVERING INDEX ix_lineage_node_node_key (node_key=?)",
+      "using_index": true,
+      "pure_scan": false,
+      "temp_sort": false,
+      "expect_index": "ix_edge_downstream",
+      "expect_note": "",
+      "hit": true
+    },
+    {
+      "label": "设备唯一键定位",
+      "why": "导入查重与 `GET /api/devices` 定位",
+      "plan": "SEARCH device USING INDEX ix_device_device_code (device_code=?)",
+      "using_index": true,
+      "pure_scan": false,
+      "temp_sort": false,
+      "expect_index": "device_code",
+      "expect_note": "",
+      "hit": true
+    },
+    {
+      "label": "测点分页（按设备过滤）",
+      "why": "`GET /api/devices/{id}/points` 分页查询",
+      "plan": "SEARCH measure_point USING INDEX ix_point_device_active (device_id=? AND is_deleted=?)",
+      "using_index": true,
+      "pure_scan": false,
+      "temp_sort": false,
+      "expect_index": "device_id",
+      "expect_note": "",
+      "hit": true
+    }
+  ]
+}

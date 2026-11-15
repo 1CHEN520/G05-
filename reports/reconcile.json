@@ -1,0 +1,36 @@
+{
+  "db": "data/db/g05.db",
+  "all_ok": true,
+  "checks": [
+    {
+      "name": "外键恒等（测点→设备）",
+      "detail": "测点 180 条，孤儿 0 条",
+      "ok": true,
+      "fail_hint": "存在孤儿测点：外键未生效（PRAGMA foreign_keys 未开）或发生过绕过约束的写入"
+    },
+    {
+      "name": "软删恒等（软删必有痕，活行必无痕）",
+      "detail": "软删 0 行；deleted_at 缺失 0，活行误带 0",
+      "ok": true,
+      "fail_hint": "软删标记与时间戳不一致：软删路径绕过了 service 层或手改过库"
+    },
+    {
+      "name": "行级审计-业务恒等（审计实体可定位）",
+      "detail": "行级审计实体键 60 个，凭空消失 0 个；操作级批次审计 1 条（只验存在）",
+      "ok": true,
+      "fail_hint": "行级审计指向物理消失的实体：审计-业务发生过库分离或单侧清理（历史案例：11-11 fault 并发案的 CONC 审计留存而设备被清）——标准处置 initdb --drop + seed 重置"
+    },
+    {
+      "name": "血缘恒等（孤儿边=0，自环=0）",
+      "detail": "边 542 条，孤儿 0，自环 0",
+      "ok": true,
+      "fail_hint": "孤儿边：血缘分发绕过了外键；自环：trg_edge_no_self_loop 触发器未装（跑 preflight 核查）"
+    },
+    {
+      "name": "批次声明守恒（seed 声明 ≤ 现存，软删不消失）",
+      "detail": "device 声明 60 ≤ 现存 60: ✓；measure_point 声明 180 ≤ 现存 180: ✓",
+      "ok": true,
+      "fail_hint": "现存行少于 seed 声明：发生过物理删除或审计与业务库分离——initdb --drop + seed 重置"
+    }
+  ]
+}
