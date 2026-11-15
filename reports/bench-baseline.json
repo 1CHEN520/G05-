@@ -7,82 +7,74 @@
     "machine": "AMD64",
     "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
     "memory_total_gb": 15.73,
-    "memory_available_gb": 4.61,
-    "disk_free_gb": 249.88,
+    "memory_available_gb": 6.18,
+    "disk_free_gb": 249.11,
     "disk_total_gb": 370.26,
     "sqlite_version": "3.53.4",
     "journal_mode": "wal"
   },
   "data_scale": {
-    "devices": 1000,
-    "points": 5000,
-    "audits": 1000,
+    "devices": 200,
+    "points": 1000,
+    "audits": 200,
     "points_per_device": 5
   },
   "results": [
     {
       "label": "批量导入",
-      "median_ms": 16.37,
-      "min_ms": 15.11,
-      "max_ms": 22.63,
+      "median_ms": 21.4,
+      "min_ms": 21.09,
+      "max_ms": 26.36,
       "samples_ms": [
-        22.63,
-        20.89,
-        16.37,
-        15.11,
-        16.35
+        26.36,
+        21.4,
+        21.09
       ],
-      "repeat": 5,
+      "repeat": 3,
       "metric": "import",
       "data_scale": "20 设备 × 3 测点"
     },
     {
       "label": "血缘影响面查询",
-      "median_ms": 0.18,
-      "min_ms": 0.16,
-      "max_ms": 5.03,
+      "median_ms": 4.59,
+      "min_ms": 4.16,
+      "max_ms": 10.79,
       "samples_ms": [
-        5.03,
-        0.24,
-        0.18,
-        0.16,
-        0.16
+        10.79,
+        4.59,
+        4.16
       ],
-      "repeat": 5,
+      "repeat": 3,
       "metric": "lineage",
-      "data_scale": "节点 BEN000001P000"
+      "data_scale": "节点 PERF_ROOT"
     },
     {
       "label": "列表分页查询",
-      "median_ms": 3.14,
-      "min_ms": 2.87,
-      "max_ms": 7.34,
+      "median_ms": 4.38,
+      "min_ms": 4.09,
+      "max_ms": 7.38,
       "samples_ms": [
-        7.34,
-        4.11,
-        2.98,
-        3.14,
-        2.87
+        7.38,
+        4.38,
+        4.09
       ],
-      "repeat": 5,
+      "repeat": 3,
       "metric": "pagination",
-      "data_scale": "1000 设备 / 5000 测点，page=1 size=20"
+      "data_scale": "200 设备 / 1000 测点，page=1 size=20"
     },
     {
       "label": "审计查询",
-      "median_ms": 1.4,
-      "min_ms": 1.27,
-      "max_ms": 2.23,
+      "median_ms": 1.59,
+      "min_ms": 1.51,
+      "max_ms": 2.25,
       "samples_ms": [
-        2.23,
-        1.29,
-        1.65,
-        1.4,
-        1.27
+        2.25,
+        1.59,
+        1.51
       ],
-      "repeat": 5,
+      "repeat": 3,
       "metric": "audit",
-      "data_scale": "1000 条审计，limit=200"
+      "data_scale": "200 条审计，limit=200"
     }
   ],
   "targets_ms": {
@@ -91,6 +83,6 @@
     "pagination": 100.0,
     "audit": 200.0
   },
-  "reproduce": "python scripts/bench.py --devices 1000 --points-per-device 5 --repeat 5",
-  "generated_at": "2026-11-04 16:33:20"
+  "reproduce": "python scripts/bench.py --devices 200 --points-per-device 5 --repeat 3",
+  "generated_at": "2026-11-15 20:54:21"
 }
