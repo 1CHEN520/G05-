@@ -194,10 +194,12 @@ python -c "import g05.core.config as c; print(c.PROJECT_ROOT)"
 | 500 响应体没有堆栈、**但有 trace_id** | 堆栈确实没有，**trace_id 也没有** |
 | 追溯矩阵每条需求至少映射到一个 issue | **27/28 行**没有 issue 引用 |
 | 导出 Excel 能被 Excel 打开且中文不乱码 | `reports/__init__.py` 是空文件，**端点根本没做** |
-| CI 红灯能挡住合并 | 必过检查列表**是空的**（已补） |
+| CI 红灯能挡住合并 | 必过检查列表**是空的**（已补）。⚠ 精确表述：#58 红灯发生在 **Ruff 阶段，pytest 未运行**；且红灯 PR 由仓库所有者本人合并（admin 可绕过，enforce_admins=false）——答辩不得说"失败用例被执行并拦截"或"所有账号都无法绕过" |
 
 **给后来者的规矩**：
 1. 关 issue 前，**把它验收标准里的命令逐条跑一遍**，把输出贴进评论。
+1.5 **开 PR 必须写 `Closes #N`**——不写则合并后 issue 漏关（#5 漏关 12 天的教训）；
+   A 评审时把"PR 是否关联 issue"当作必查项，并每周扫一次 OPEN issue 与已合 PR 的对应关系。
 2. 只"读代码觉得对"不算证据。
 3. 没做就说没做（像 #32 那样），不要用"功能等价"糊弄。
 
@@ -355,7 +357,8 @@ python -m g05 serve --port 8000
 main：preflight passed=true soft=[] · 183 passed · ruff 干净
       故障注入 5/5 · 22 端点全 200 · 覆盖率 85%（核心四模块 94%）
 分支保护：CI 必过 `lint & test (py3.12)`（app_id 15368）
-          普通成员红灯被挡；admin 仍可绕过（enforce_admins=false，有意为之）
+          admin 可绕过（enforce_admins=false，有意为之）；⚠"普通成员红灯被挡"
+          无独立操作日志佐证，不得作为答辩证据（2026-11-15 证据核查）
 已交付：A · B1(#43) · B2(#49) · C5(#50) · C3(#57 在途)
 待交付：C1 · C2 · C4 · C6
 ```
