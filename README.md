@@ -8,7 +8,7 @@
 
 ---
 
-## 一、开题四问（必答）
+## 一、开题五问（必答）
 
 ### 1. 断电重启会怎样？
 
@@ -18,7 +18,7 @@
 - 所有写操作包在 `session_scope()` 事务里，不存在"写一半"的中间态
 - 审计表 append-only，重启后历史记录完整
 
-**实证**：`python scripts/fault_inject.py --case kill` —— 子进程连续写库时被 `SIGKILL` 强杀，重启后 `PRAGMA integrity_check = ok`，已落盘 800+ 条记录全部可读。
+**实证**：`python scripts/fault_inject.py --case kill` —— 子进程连续写库时被 `SIGKILL` 强杀，重启后 `PRAGMA integrity_check = ok`，已落盘 800+ 条记录全部可读；重启后再跑 `python scripts/reconcile.py`，**五组对账恒等 5/5 成立**（外键/软删/行级审计/血缘/批次声明）——崩溃且能恢复的可验证证据。
 
 ### 2. 并发上来扛得住吗？
 
@@ -28,7 +28,7 @@
 - WAL 允许读写并发（读不阻塞写）
 - 批量导入走 `bulk_insert_mappings` + 分片提交，绕过 ORM 逐行开销
 
-**实测**：8 线程 × 40 条并发写入，320 条全部入库，0 报错，耗时 0.19s；万行 Excel 导入 <30s（单测 `test_import_10k_rows_under_30s` 守护）。
+**实测**：8 线程 × 40 条并发写入，320 条全部入库，0 报错，耗时 **0.37s**（11-11 联调复测）；万行 Excel 导入实测 **1.14s**（阈值 <30s，三次 1.14/1.17/1.13），`bench.py` 20 次采样导入 p95 = 28.07ms。
 
 ### 3. 出问题能查到人/根因吗？
 
@@ -37,6 +37,7 @@
 - 审计表 `audit_log` 记录 **谁 / 何时 / 改了哪张表的哪条 / 改前改后快照 / 变更原因**
 - 数据库触发器 `trg_audit_no_update` / `trg_audit_no_delete` 直接 `RAISE(ABORT)` —— **绕过应用层也改不了审计**
 - 血缘查询能定位"改这个测点，哪些报表/任务会受影响"，给出完整依赖路径
+- **根因串联**：日志为 JSON Lines（`logs/app.jsonl`）且每条带 `trace_id`，500 错误体也带 trace_id——一个请求从入口到 SQL 的全链路可按 ID 捞齐；慢查询超 200ms 打 WARN
 
 **实证**：`POST /api/audit/verify-immutable` 现场对审计表发 `UPDATE`/`DELETE`，均被数据库拒绝。
 
@@ -59,7 +60,16 @@ python -m g05 serve
 
 ### 5. 怎么对应软件工程流程及国家标准和 TOGAF？
 
-见 [`docs/03-流程与标准映射.md`](docs/03-流程与标准映射.md)：七阶段 SLA 对照 GB/T 8566 软件生存周期过程，架构产物按 TOGAF ADM 八阶段归档。
+**七阶段全流程成册，国家 standards 逐一对齐，TOGAF ADM 八阶段完整映射**——详表见 [`docs/03-流程与标准映射.md`](docs/03-流程与标准映射.md)。
+
+| 国标/标准 | 对应成册文档 |
+|---|---|
+| GB/T 8566-2022 软件生存周期过程 | `docs/03` 第二章：基本/支持/组织三过程逐条对照 |
+| 需求规格（GB/T 9385-2008 对应） | `docs/01-需求规格.md` + `docs/10-可行性分析报告.md` |
+| 概要设计 + 详细设计（GB/T 8567-2006 对应） | `docs/02-架构设计.md`（概要设计）+ `docs/11-详细设计报告.md`（E-R 图→表结构、类与方法） |
+| 测试用例（GB/T 15532-2008 对应） | `docs/12-软件测试报告.md`：单元/集成/性能/压力四类 + src-test 一一对应表 |
+| 部署运维（双系统） | `docs/13-部署报告.md`：Windows 11 实测 + Ubuntu 22.04 标准路径 |
+| TOGAF ADM A~H | `docs/03` 第三章：预备阶段/A 愿景/B 业务/C 信息系统/…逐阶段产物归位 |
 
 ---
 
