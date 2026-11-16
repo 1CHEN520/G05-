@@ -50,6 +50,10 @@ roles:
       - docs/03-流程与标准映射.md
       - docs/review/**
       - docs/需求追溯矩阵.md
+      - docs/10-可行性分析报告.md
+      - docs/11-详细设计报告.md
+      - docs/12-软件测试报告.md
+      - docs/13-部署报告.md
       - docs/答辩材料.md
       - guides/**
       - .github/CODEOWNERS
